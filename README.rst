@@ -25,7 +25,7 @@ It's suggested that you install with ``pip``:
 
     pip install flask-digest-auth
 
-You may also install from the latest source from the
+You may also install the latest source from the
 `flask-digest-auth Github repository`_.
 
 ::
