@@ -19,7 +19,6 @@
 
 """
 import typing as t
-import unittest
 from secrets import token_urlsafe
 
 from flask import Response, Flask
