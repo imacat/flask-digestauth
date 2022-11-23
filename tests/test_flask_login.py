@@ -19,15 +19,13 @@
 
 """
 import typing as t
+import unittest
 from secrets import token_urlsafe
 
-import flask_login
 from flask import Response, Flask
-from flask_login import LoginManager
 from flask_testing import TestCase
 
-from flask_digest_auth import DigestAuth, make_password_hash, Client, \
-    init_login_manager
+from flask_digest_auth import DigestAuth, make_password_hash, Client
 
 _REALM: str = "testrealm@host.com"
 _USERNAME: str = "Mufasa"
@@ -53,7 +51,7 @@ class User:
 class FlaskLoginTestCase(TestCase):
     """The test case with the Flask-Login integration."""
 
-    def create_app(self):
+    def create_app(self) -> Flask:
         """Creates the Flask application.
 
         :return: The Flask application.
@@ -65,11 +63,18 @@ class FlaskLoginTestCase(TestCase):
         })
         app.test_client_class = Client
 
-        login_manager: LoginManager = LoginManager()
+        self.has_flask_login: bool = True
+        try:
+            import flask_login
+        except ModuleNotFoundError:
+            self.has_flask_login = False
+            return app
+
+        login_manager: flask_login.LoginManager = flask_login.LoginManager()
         login_manager.init_app(app)
 
         auth: DigestAuth = DigestAuth(realm=_REALM)
-        init_login_manager(auth, login_manager)
+        auth.init_app(app)
 
         user_db: t.Dict[str, str] \
             = {_USERNAME: make_password_hash(_REALM, _USERNAME, _PASSWORD)}
@@ -117,6 +122,9 @@ class FlaskLoginTestCase(TestCase):
 
         :return: None.
         """
+        if not self.has_flask_login:
+            self.skipTest("Skipped testing Flask-Login integration without it.")
+
         response: Response = self.client.get(self.app.url_for("auth-1"))
         self.assertEqual(response.status_code, 401)
         response = self.client.get(

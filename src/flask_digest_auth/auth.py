@@ -27,7 +27,7 @@ from functools import wraps
 from random import random
 from secrets import token_urlsafe
 
-from flask import g, request, Response, session, abort
+from flask import g, request, Response, session, abort, Flask, Request
 from itsdangerous import URLSafeTimedSerializer, BadData
 from werkzeug.datastructures import Authorization
 
@@ -194,6 +194,63 @@ class DigestAuth:
         :return: None.
         """
         self.__get_user = func
+
+    def init_app(self, app: Flask) -> None:
+        """Initializes the Flask application.
+
+        :param app: The Flask application.
+        :return: None.
+        """
+
+        try:
+            from flask_login import LoginManager, login_user
+
+            if not hasattr(app, "login_manager"):
+                raise AttributeError(
+                    "Please run the Flask-Login init-app() first")
+            login_manager: LoginManager = getattr(app, "login_manager")
+
+            @login_manager.unauthorized_handler
+            def unauthorized() -> None:
+                """Handles when the user is unauthorized.
+
+                :return: None.
+                """
+                response: Response = Response()
+                response.status = 401
+                response.headers["WWW-Authenticate"] \
+                    = self.make_response_header(g.digest_auth_state)
+                abort(response)
+
+            @login_manager.request_loader
+            def load_user_from_request(req: Request) -> t.Optional[t.Any]:
+                """Loads the user from the request header.
+
+                :param req: The request.
+                :return: The authenticated user, or None if the
+                    authentication fails
+                """
+                g.digest_auth_state = AuthState()
+                authorization: Authorization = req.authorization
+                try:
+                    if authorization is None:
+                        raise UnauthorizedException
+                    if authorization.type != "digest":
+                        raise UnauthorizedException(
+                            "Not an HTTP digest authorization")
+                    self.authenticate(g.digest_auth_state)
+                    user = login_manager.user_callback(
+                        authorization.username)
+                    login_user(user)
+                    return user
+                except UnauthorizedException as e:
+                    if str(e) != "":
+                        app.logger.warning(str(e))
+                    return None
+
+        except ModuleNotFoundError:
+            raise ModuleNotFoundError(
+                "init_app() is only for Flask-Login integration")
 
 
 class AuthState:
