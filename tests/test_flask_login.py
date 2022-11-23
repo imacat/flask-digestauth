@@ -91,7 +91,7 @@ class FlaskLoginTestCase(TestCase):
             """
             return User(user_id) if user_id in user_db else None
 
-        @app.route("/login-required-1/auth", endpoint="auth-1")
+        @app.get("/login-required-1/auth", endpoint="auth-1")
         @flask_login.login_required
         def login_required_1() -> str:
             """The first dummy view.
@@ -100,7 +100,7 @@ class FlaskLoginTestCase(TestCase):
             """
             return f"Hello, {flask_login.current_user.username}! #1"
 
-        @app.route("/login-required-2/auth", endpoint="auth-2")
+        @app.get("/login-required-2/auth", endpoint="auth-2")
         @flask_login.login_required
         def login_required_2() -> str:
             """The second dummy view.

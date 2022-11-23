@@ -70,7 +70,7 @@ class AuthenticationTestCase(TestCase):
         })
         app.test_client_class = Client
 
-        @app.route("/login-required-1/auth", endpoint="auth-1")
+        @app.get("/login-required-1/auth", endpoint="auth-1")
         @auth.login_required
         def login_required_1() -> str:
             """The first dummy view.
@@ -79,7 +79,7 @@ class AuthenticationTestCase(TestCase):
             """
             return f"Hello, {g.user.username}! #1"
 
-        @app.route("/login-required-2/auth", endpoint="auth-2")
+        @app.get("/login-required-2/auth", endpoint="auth-2")
         @auth.login_required
         def login_required_2() -> str:
             """The second dummy view.
