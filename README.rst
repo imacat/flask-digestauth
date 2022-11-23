@@ -1,6 +1,6 @@
-====================================
-The Flask HTTP Digest Authentication
-====================================
+================================
+Flask HTTP Digest Authentication
+================================
 
 
 Description
