@@ -49,54 +49,55 @@ class Client(WerkzeugClient):
             return response
         if hasattr(g, "_login_user"):
             delattr(g, "_login_user")
-        auth_data: Authorization = _get_req_auth(
+        auth_data: Authorization = self.__class__.__make_authorization(
             www_authenticate, args[0], digest_auth[0], digest_auth[1])
         response = super(Client, self).open(*args, auth=auth_data, **kwargs)
         return response
 
+    @staticmethod
+    def __make_authorization(www_authenticate: WWWAuthenticate, uri: str,
+                             username: str, password: str) -> Authorization:
+        """Composes and returns the request authorization.
 
-def _get_req_auth(www_authenticate: WWWAuthenticate, uri: str,
-                  username: str, password: str) -> Authorization:
-    """Returns the request authorization from the response header.
+        :param www_authenticate: The WWW-Authenticate response.
+        :param uri: The request URI.
+        :param username: The username.
+        :param password: The password.
+        :return: The request authorization.
+        """
+        qop: t.Optional[t.Literal["auth", "auth-int"]] = None
+        if www_authenticate.qop is not None:
+            if "auth" in www_authenticate.qop:
+                qop = "auth"
 
-    :param www_authenticate: The WWW-Authenticate response.
-    :param uri: The request URI.
-    :param username: The username.
-    :param password: The password.
-    :return: The request authorization.
-    """
-    qop: t.Optional[t.Literal["auth", "auth-int"]] = None
-    if www_authenticate.qop is not None:
-        if "auth" in www_authenticate.qop:
-            qop = "auth"
+        cnonce: t.Optional[str] = None
+        if qop is not None or www_authenticate.algorithm == "MD5-sess":
+            cnonce = token_urlsafe(8)
+        nc: t.Optional[str] = None
+        count: int = 1
+        if qop is not None:
+            nc: str = hex(count)[2:].zfill(8)
 
-    cnonce: t.Optional[str] = None
-    if qop is not None or www_authenticate.algorithm == "MD5-sess":
-        cnonce = token_urlsafe(8)
-    nc: t.Optional[str] = None
-    count: int = 1
-    if qop is not None:
-        nc: str = hex(count)[2:].zfill(8)
+        expected: str = calc_response(
+            method="GET", uri=uri,
+            password_hash=make_password_hash(www_authenticate.realm,
+                                             username, password),
+            nonce=www_authenticate.nonce, qop=qop,
+            algorithm=www_authenticate.algorithm, cnonce=cnonce, nc=nc,
+            body=None)
 
-    expected: str = calc_response(
-        method="GET", uri=uri,
-        password_hash=make_password_hash(www_authenticate.realm,
-                                         username, password),
-        nonce=www_authenticate.nonce, qop=qop,
-        algorithm=www_authenticate.algorithm, cnonce=cnonce, nc=nc, body=None)
+        data: t.Dict[str, str] = {
+            "username": username, "realm": www_authenticate.realm,
+            "nonce": www_authenticate.nonce, "uri": uri, "response": expected}
+        if www_authenticate.algorithm is not None:
+            data["algorithm"] = www_authenticate.algorithm
+        if cnonce is not None:
+            data["cnonce"] = cnonce
+        if www_authenticate.opaque is not None:
+            data["opaque"] = www_authenticate.opaque
+        if qop is not None:
+            data["qop"] = qop
+        if nc is not None:
+            data["nc"] = nc
 
-    data: t.Dict[str, str] = {
-        "username": username, "realm": www_authenticate.realm,
-        "nonce": www_authenticate.nonce, "uri": uri, "response": expected}
-    if www_authenticate.algorithm is not None:
-        data["algorithm"] = www_authenticate.algorithm
-    if cnonce is not None:
-        data["cnonce"] = cnonce
-    if www_authenticate.opaque is not None:
-        data["opaque"] = www_authenticate.opaque
-    if qop is not None:
-        data["qop"] = qop
-    if nc is not None:
-        data["nc"] = nc
-
-    return Authorization("digest", data=data)
+        return Authorization("digest", data=data)
