@@ -16,14 +16,16 @@ modules that work with different authentication mechanisms.
 .. _Flask-Login: https://flask-login.readthedocs.io
 
 
-Flask-Digest-Auth Alone without Flask-Login
-===========================================
+Flask-Digest-Auth Alone
+=======================
 
-Flask-Digest-Auth can authenticate the users alone without Flask-Login.
+Flask-Digest-Auth can authenticate the users alone.
 
 
 Example for Simple Applications with Flask-Digest-Auth Alone
 ------------------------------------------------------------
+
+In your ``my_app.py``:
 
 ::
 
@@ -52,14 +54,16 @@ Example for Simple Applications with Flask-Digest-Auth Alone
 Example for Larger Applications with ``create_app()`` with Flask-Digest-Auth Alone
 ----------------------------------------------------------------------------------
 
+In your ``my_app/__init__.py``:
+
 :::
 
     from flask import Flask
     from flask_digest_auth import DigestAuth
 
-    auth: DigestAuth = DigestAuth(realm="Admin")
+    auth: DigestAuth = DigestAuth()
 
-    def create_app(test_config) -> Flask:
+    def create_app(test_config = None) -> Flask:
         app: flask = Flask(__name__)
         ... (Configure the Flask application) ...
 
@@ -75,11 +79,11 @@ Example for Larger Applications with ``create_app()`` with Flask-Digest-Auth Alo
 
         return app
 
-In your views:
+In your ``my_app/views.py``:
 
 ::
 
-    from . import auth
+    from my_app import auth
     from flask import Flask, Blueprint
 
     bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -99,11 +103,13 @@ Flask-Login Integration
 Flask-Digest-Auth can work with Flask-Login.  You can write a Flask
 module that requires log in, without specifying the authentication
 mechanism.  The Flask application can specify the actual
-authentication mechanism as they see fit.
+authentication mechanism as it sees fit.
 
 
 Example for Simple Applications with Flask-Login Integration
 ------------------------------------------------------------
+
+In your ``my_app.py``:
 
 ::
 
@@ -137,13 +143,15 @@ Example for Simple Applications with Flask-Login Integration
 Example for Larger Applications with ``create_app()`` with Flask-Login Integration
 ----------------------------------------------------------------------------------
 
+In your ``my_app/__init__.py``:
+
 :::
 
     from flask import Flask
     from flask_digest_auth import DigestAuth
     from flask_login import LoginManager
 
-    def create_app(test_config) -> Flask:
+    def create_app(test_config = None) -> Flask:
         app: flask = Flask(__name__)
         ... (Configure the Flask application) ...
 
@@ -163,7 +171,7 @@ Example for Larger Applications with ``create_app()`` with Flask-Login Integrati
 
         return app
 
-In your views:
+In your ``my_app/views.py``:
 
 ::
 
@@ -190,8 +198,8 @@ mechanism.
 Writing Tests
 =============
 
-A test client that handles HTTP Digest Authentication is included.
-Example for a unittest testcase:
+You can write tests with our test client that handles HTTP Digest
+Authentication.  Example for a unittest testcase:
 
 ::
 
@@ -210,6 +218,8 @@ Example for a unittest testcase:
             return app
 
         def test_admin(self):
+            response = self.client.get("/admin")
+            self.assertEqual(response.status_code, 401)
             response = self.client.get(
                 "/admin", digest_auth=("my_name", "my_pass"))
             self.assertEqual(response.status_code, 200)
