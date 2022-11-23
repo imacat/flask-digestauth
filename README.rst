@@ -16,6 +16,27 @@ modules that work with different authentication mechanisms.
 .. _Flask-Login: https://flask-login.readthedocs.io
 
 
+Installation
+============
+
+It's suggested that you install with ``pip``:
+
+::
+
+    pip install flask-digest-auth
+
+You may also install from the latest source from the
+`flask-digest-auth Github repository`_.
+
+::
+
+    git clone git@github.com:imacat/flask-digest-auth.git
+    cd flask-digest-auth
+    pip install .
+
+.. _flask-digest-auth Github repository: https://github.com/imacat/flask-digest-auth
+
+
 Flask-Digest-Auth Alone
 =======================
 
