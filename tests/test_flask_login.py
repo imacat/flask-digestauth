@@ -58,8 +58,19 @@ class FlaskLoginTestCase(TestCase):
 
         :return: The Flask application.
         """
-        auth: DigestAuth = DigestAuth(realm=_REALM)
+        app: Flask = Flask(__name__)
+        app.config.from_mapping({
+            "SECRET_KEY": token_urlsafe(32),
+            "TESTING": True
+        })
+        app.test_client_class = Client
+
         login_manager: LoginManager = LoginManager()
+        login_manager.init_app(app)
+
+        auth: DigestAuth = DigestAuth(realm=_REALM)
+        init_login_manager(auth, login_manager)
+
         user_db: t.Dict[str, str] \
             = {_USERNAME: make_password_hash(_REALM, _USERNAME, _PASSWORD)}
 
@@ -71,16 +82,6 @@ class FlaskLoginTestCase(TestCase):
             :return: The password hash, or None if the user does not exist.
             """
             return user_db[username] if username in user_db else None
-
-        app: Flask = Flask(__name__)
-        app.config.from_mapping({
-            "SECRET_KEY": token_urlsafe(32),
-            "TESTING": True
-        })
-        app.test_client_class = Client
-
-        login_manager.init_app(app)
-        init_login_manager(auth, login_manager)
 
         @login_manager.user_loader
         def load_user(user_id: str) -> t.Optional[User]:

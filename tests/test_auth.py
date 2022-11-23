@@ -40,6 +40,13 @@ class AuthenticationTestCase(TestCase):
 
         :return: The Flask application.
         """
+        app: Flask = Flask(__name__)
+        app.config.from_mapping({
+            "SECRET_KEY": token_urlsafe(32),
+            "TESTING": True
+        })
+        app.test_client_class = Client
+
         auth: DigestAuth = DigestAuth(realm=_REALM)
         user_db: t.Dict[str, str] \
             = {_USERNAME: make_password_hash(_REALM, _USERNAME, _PASSWORD)}
@@ -62,13 +69,6 @@ class AuthenticationTestCase(TestCase):
             """
             return SimpleNamespace(username=username) if username in user_db \
                 else None
-
-        app: Flask = Flask(__name__)
-        app.config.from_mapping({
-            "SECRET_KEY": token_urlsafe(32),
-            "TESTING": True
-        })
-        app.test_client_class = Client
 
         @app.get("/login-required-1/auth", endpoint="auth-1")
         @auth.login_required
