@@ -9,11 +9,182 @@ Description
 *Flask-Digest-Auth* is an HTTP Digest Authentication implementation
 for Flask_ applications.  It authenticates the user for the protected
 views.  It works with Flask-Login_, so that log in protection can be
-separated with the log in mechanism.  You can write Flask modules that
-work with different log in mechanisms.
+separated with the authentication mechanism.  You can write Flask
+modules that work with different authentication mechanisms.
 
 .. _Flask: https://flask.palletsprojects.com
 .. _Flask-Login: https://flask-login.readthedocs.io
+
+
+Flask-Digest-Auth Alone without Flask-Login
+===========================================
+
+Flask-Digest-Auth can authenticate the users alone without Flask-Login.
+
+
+Example for Simple Applications with Flask-Digest-Auth Alone
+------------------------------------------------------------
+
+::
+
+    from flask import Flask
+    from flask_digest_auth import DigestAuth
+
+    app: flask = Flask(__name__)
+    ... (Configure the Flask application) ...
+
+    auth: DigestAuth = DigestAuth(realm="Admin")
+
+    @auth.register_get_password
+    def get_password_hash(username: str) -> t.Optional[str]:
+        ... (Load the password hash) ...
+
+    @auth.register_get_user
+    def get_user(username: str) -> t.Optional[t.Any]:
+        ... (Load the user) ...
+
+    @app.get("/admin")
+    @auth.login_required
+    def admin():
+        ... (Process the view) ...
+
+
+Example for Larger Applications with ``create_app()`` with Flask-Digest-Auth Alone
+----------------------------------------------------------------------------------
+
+:::
+
+    from flask import Flask
+    from flask_digest_auth import DigestAuth
+
+    auth: DigestAuth = DigestAuth(realm="Admin")
+
+    def create_app(test_config) -> Flask:
+        app: flask = Flask(__name__)
+        ... (Configure the Flask application) ...
+
+        auth.realm = app.config["REALM"]
+
+        @auth.register_get_password
+        def get_password_hash(username: str) -> t.Optional[str]:
+            ... (Load the password hash) ...
+
+        @auth.register_get_user
+        def get_user(username: str) -> t.Optional[t.Any]:
+            ... (Load the user) ...
+
+        return app
+
+In your views:
+
+::
+
+    from . import auth
+    from flask import Flask, Blueprint
+
+    bp = Blueprint("admin", __name__, url_prefix="/admin")
+
+    @bp.get("/")
+    @auth.login_required
+    def admin():
+        ... (Process the view) ...
+
+    def init_app(app: Flask) -> None:
+        app.register_blueprint(bp)
+
+
+Flask-Login Integration
+=======================
+
+Flask-Digest-Auth can work with Flask-Login.  You can write a Flask
+module that requires log in, without specifying the authentication
+mechanism.  The Flask application can specify the actual
+authentication mechanism as they see fit.
+
+
+Example for Simple Applications with Flask-Login Integration
+------------------------------------------------------------
+
+::
+
+    from flask import Flask
+    from flask_digest_auth import DigestAuth
+    from flask_login import LoginManager
+
+    app: flask = Flask(__name__)
+    ... (Configure the Flask application) ...
+
+    login_manager: LoginManager = LoginManager()
+    login_manager.init_app(app)
+
+    @login_manager.user_loader
+    def load_user(user_id: str) -> t.Optional[User]:
+        ... (Load the user with the username) ...
+
+    auth: DigestAuth = DigestAuth(realm="Admin")
+    auth.init_app(app)
+
+    @auth.register_get_password
+    def get_password_hash(username: str) -> t.Optional[str]:
+        ... (Load the password hash) ...
+
+    @app.get("/admin")
+    @login_manager.login_required
+    def admin():
+        ... (Process the view) ...
+
+
+Example for Larger Applications with ``create_app()`` with Flask-Login Integration
+----------------------------------------------------------------------------------
+
+:::
+
+    from flask import Flask
+    from flask_digest_auth import DigestAuth
+    from flask_login import LoginManager
+
+    def create_app(test_config) -> Flask:
+        app: flask = Flask(__name__)
+        ... (Configure the Flask application) ...
+
+        login_manager: LoginManager = LoginManager()
+        login_manager.init_app(app)
+
+        @login_manager.user_loader
+        def load_user(user_id: str) -> t.Optional[User]:
+            ... (Load the user with the username) ...
+
+        auth: DigestAuth = DigestAuth(realm=app.config["REALM"])
+        auth.init_app(app)
+
+        @auth.register_get_password
+        def get_password_hash(username: str) -> t.Optional[str]:
+            ... (Load the password hash) ...
+
+        return app
+
+In your views:
+
+::
+
+    import flask_login
+    from flask import Flask, Blueprint
+
+    bp = Blueprint("admin", __name__, url_prefix="/admin")
+
+    @bp.get("/")
+    @flask_login.login_required
+    def admin():
+        ... (Process the view) ...
+
+    def init_app(app: Flask) -> None:
+        app.register_blueprint(bp)
+
+The views only depend on Flask-Login, but not its underlying
+authentication mechanism.  You can always change the
+authentication mechanism without changing the views, or release a
+protected Flask module without specifying the authentication
+mechanism.
 
 
 Copyright
