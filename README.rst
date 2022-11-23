@@ -187,6 +187,34 @@ protected Flask module without specifying the authentication
 mechanism.
 
 
+Writing Tests
+=============
+
+A test client that handles HTTP Digest Authentication is included.
+Example for a unittest testcase:
+
+::
+
+    from flask_digest_auth import Client
+    from flask_testing import TestCase
+    from my_app import create_app
+
+    class MyTestCase(TestCase):
+
+        def create_app(self):
+            app: Flask = create_app({
+                "SECRET_KEY": token_urlsafe(32),
+                "TESTING": True
+            })
+            app.test_client_class = Client
+            return app
+
+        def test_admin(self):
+            response = self.client.get(
+                "/admin", digest_auth=("my_name", "my_pass"))
+            self.assertEqual(response.status_code, 200)
+
+
 Copyright
 =========
 
