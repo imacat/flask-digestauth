@@ -60,8 +60,45 @@ def calc_response(
         algorithm, when the body is missing with the auth-int qop, or when the
         cnonce or nc is missing with the auth or auth-int qop.
     """
-    ha1: str = __calc_ha1(password_hash, nonce, algorithm, cnonce)
-    ha2: str = __calc_ha2(method, uri, qop, body)
+
+    def calc_ha1() -> str:
+        """Calculates and returns the first hash.
+
+        :return: The first hash.
+        :raise UnauthorizedException: When the cnonce is missing with the MD5-sess
+            algorithm.
+        """
+        if algorithm is None or algorithm == "MD5":
+            return password_hash
+        if algorithm == "MD5-sess":
+            if cnonce is None:
+                raise UnauthorizedException(
+                    f"Missing \"cnonce\" with algorithm=\"{algorithm}\"")
+            return md5(f"{password_hash}:{nonce}:{cnonce}".encode("utf8")) \
+                .hexdigest()
+        raise UnauthorizedException(
+            f"Unsupported algorithm=\"{algorithm}\"")
+
+    def calc_ha2() -> str:
+        """Calculates the second hash.
+
+        :return: The second hash.
+        :raise UnauthorizedException: When the body is missing with
+            qop="auth-int".
+        """
+        if qop is None or qop == "auth":
+            return md5(f"{method}:{uri}".encode("utf8")).hexdigest()
+        if qop == "auth-int":
+            if body is None:
+                raise UnauthorizedException(
+                    f"Missing \"body\" with qop=\"{qop}\"")
+            return md5(
+                f"{method}:{uri}:{md5(body).hexdigest()}".encode("utf8")) \
+                .hexdigest()
+        raise UnauthorizedException(f"Unsupported qop=\"{qop}\"")
+
+    ha1: str = calc_ha1()
+    ha2: str = calc_ha2()
     if qop is None:
         return md5(f"{ha1}:{nonce}:{ha2}".encode("utf8")).hexdigest()
     if qop == "auth" or qop == "auth-int":
@@ -76,52 +113,3 @@ def calc_response(
     if cnonce is None:
         raise UnauthorizedException(
             f"Unsupported qop=\"{qop}\"")
-
-
-def __calc_ha1(password_hash: str, nonce: str,
-               algorithm: t.Optional[t.Literal["MD5", "MD5-sess"]] = None,
-               cnonce: t.Optional[str] = None) -> str:
-    """Calculates and returns the first hash.
-
-    :param password_hash: The password hash for the HTTP digest authentication.
-    :param nonce: The nonce.
-    :param algorithm: The algorithm, either "MD5", "MD5-sess", or None.
-    :param cnonce: The client nonce.  It must be provided when the algorithm is
-        "MD5-sess".
-    :return: The first hash.
-    :raise UnauthorizedException: When the cnonce is missing with the MD5-sess
-        algorithm.
-    """
-    if algorithm is None or algorithm == "MD5":
-        return password_hash
-    if algorithm == "MD5-sess":
-        if cnonce is None:
-            raise UnauthorizedException(
-                f"Missing \"cnonce\" with algorithm=\"{algorithm}\"")
-        return md5(f"{password_hash}:{nonce}:{cnonce}".encode("utf8"))\
-            .hexdigest()
-    raise UnauthorizedException(
-        f"Unsupported algorithm=\"{algorithm}\"")
-
-
-def __calc_ha2(method: str, uri: str,
-               qop: t.Optional[t.Literal["auth", "auth-int"]] = None,
-               body: t.Optional[bytes] = None) -> str:
-    """Calculates the second hash.
-
-    :param method: The request method.
-    :param uri: The request URI.
-    :param qop: The quality of protection, either "auth", "auth-int" or None.
-    :param body: The request body.  It must be provided when the quality of
-        protection is "auth-int".
-    :return: The second hash.
-    :raise UnauthorizedException: When the body is missing with qop="auth-int".
-    """
-    if qop is None or qop == "auth":
-        return md5(f"{method}:{uri}".encode("utf8")).hexdigest()
-    if qop == "auth-int":
-        if body is None:
-            raise UnauthorizedException(f"Missing \"body\" with qop=\"{qop}\"")
-        return md5(f"{method}:{uri}:{md5(body).hexdigest()}".encode("utf8"))\
-            .hexdigest()
-    raise UnauthorizedException(f"Unsupported qop=\"{qop}\"")
