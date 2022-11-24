@@ -133,7 +133,7 @@ In your ``my_app/views.py``:
 
     bp = Blueprint("admin", __name__, url_prefix="/admin")
 
-    @bp.get("/")
+    @bp.get("/admin")
     @auth.login_required
     def admin():
         ... (Process the view) ...
@@ -241,7 +241,7 @@ In your ``my_app/views.py``:
 
     bp = Blueprint("admin", __name__, url_prefix="/admin")
 
-    @bp.get("/")
+    @bp.get("/admin")
     @flask_login.login_required
     def admin():
         ... (Process the view) ...
