@@ -27,8 +27,7 @@ from functools import wraps
 from random import random
 from secrets import token_urlsafe
 
-from flask import g, request, Response, session, abort, Flask, Request, \
-    current_app
+from flask import g, request, Response, session, abort, Flask, Request
 from itsdangerous import URLSafeTimedSerializer, BadData
 from werkzeug.datastructures import Authorization
 
@@ -55,6 +54,7 @@ class DigestAuth:
         self.__get_password_hash: t.Callable[[str], t.Optional[str]] \
             = lambda x: None
         self.__get_user: t.Callable[[str], t.Optional] = lambda x: None
+        self.app: t.Optional[Flask] = None
 
     def login_required(self, view) -> t.Callable:
         """The view decorator for HTTP digest authentication.
@@ -205,13 +205,12 @@ class DigestAuth:
         :param app: The Flask application.
         :return: None.
         """
+        app.digest_auth = self
+        self.app = app
 
-        try:
+        if hasattr(app, "login_manager"):
             from flask_login import LoginManager, login_user
 
-            if not hasattr(app, "login_manager"):
-                raise AttributeError(
-                    "Please run the Flask-Login init-app() first")
             login_manager: LoginManager = getattr(app, "login_manager")
 
             @login_manager.unauthorized_handler
@@ -252,12 +251,7 @@ class DigestAuth:
                         app.logger.warning(str(e))
                     return None
 
-        except ModuleNotFoundError:
-            raise ModuleNotFoundError(
-                "init_app() is only for Flask-Login integration")
-
-    @staticmethod
-    def logout() -> None:
+    def logout(self) -> None:
         """Logs out the user.
         This actually causes the next authentication to fail, which forces
         the browser to ask the user for the username and password again.
@@ -267,7 +261,7 @@ class DigestAuth:
         if "user" in session:
             del session["user"]
         try:
-            if hasattr(current_app, "login_manager"):
+            if hasattr(self.app, "login_manager"):
                 from flask_login import logout_user
                 logout_user()
         except ModuleNotFoundError:

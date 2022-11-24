@@ -49,6 +49,7 @@ class AuthenticationTestCase(TestCase):
         app.test_client_class = Client
 
         auth: DigestAuth = DigestAuth(realm=_REALM)
+        auth.init_app(app)
         user_db: t.Dict[str, str] \
             = {_USERNAME: make_password_hash(_REALM, _USERNAME, _PASSWORD)}
 

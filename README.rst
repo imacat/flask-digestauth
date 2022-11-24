@@ -75,6 +75,7 @@ In your ``my_app.py``:
     ... (Configure the Flask application) ...
 
     auth: DigestAuth = DigestAuth(realm="Admin")
+    auth.init_app(app)
 
     @auth.register_get_password
     def get_password_hash(username: str) -> t.Optional[str]:
@@ -113,6 +114,7 @@ In your ``my_app/__init__.py``:
         ... (Configure the Flask application) ...
 
         auth.realm = app.config["REALM"]
+        auth.init_app(app)
 
         @auth.register_get_password
         def get_password_hash(username: str) -> t.Optional[str]:
@@ -155,6 +157,9 @@ Flask-Digest-Auth can work with Flask-Login.  You can write a Flask
 module that requires log in, without specifying the authentication
 mechanism.  The Flask application can specify the actual
 authentication mechanism as it sees fit.
+
+``login_manager.init_app(app)`` must be called before
+``auth.init_app(app)``.
 
 
 Example for Simple Applications with Flask-Login Integration
