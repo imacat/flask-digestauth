@@ -22,7 +22,7 @@ import typing as t
 from secrets import token_urlsafe
 from types import SimpleNamespace
 
-from flask import Response, Flask, g
+from flask import Response, Flask, g, redirect, request
 from flask_testing import TestCase
 from werkzeug.datastructures import WWWAuthenticate, Authorization
 
@@ -89,6 +89,16 @@ class AuthenticationTestCase(TestCase):
             """
             return f"Hello, {g.user.username}! #2"
 
+        @app.post("/logout", endpoint="logout")
+        @auth.login_required
+        def logout() -> redirect:
+            """Logs out the user.
+
+            :return: The response.
+            """
+            auth.logout()
+            return redirect(request.form.get("next"))
+
         return app
 
     def test_auth(self) -> None:
@@ -145,4 +155,41 @@ class AuthenticationTestCase(TestCase):
         auth_data = Client.make_authorization(
             www_authenticate, admin_uri, _USERNAME, _PASSWORD)
         response = super(Client, self.client).get(admin_uri, auth=auth_data)
+        self.assertEqual(response.status_code, 200)
+
+    def test_logout(self) -> None:
+        """Tests the logging out.
+
+        :return: None.
+        """
+        admin_uri: str = self.app.url_for("admin-1")
+        logout_uri: str = self.app.url_for("logout")
+        response: Response
+
+        response = self.client.get(admin_uri)
+        self.assertEqual(response.status_code, 401)
+
+        response = self.client.get(admin_uri,
+                                   digest_auth=(_USERNAME, _PASSWORD))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(admin_uri)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(logout_uri, data={"next": admin_uri})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, admin_uri)
+
+        response = self.client.get(admin_uri)
+        self.assertEqual(response.status_code, 401)
+
+        response = self.client.get(admin_uri,
+                                   digest_auth=(_USERNAME, _PASSWORD))
+        self.assertEqual(response.status_code, 401)
+
+        response = self.client.get(admin_uri,
+                                   digest_auth=(_USERNAME, _PASSWORD))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(admin_uri)
         self.assertEqual(response.status_code, 200)

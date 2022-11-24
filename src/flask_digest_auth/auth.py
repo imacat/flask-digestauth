@@ -27,7 +27,8 @@ from functools import wraps
 from random import random
 from secrets import token_urlsafe
 
-from flask import g, request, Response, session, abort, Flask, Request
+from flask import g, request, Response, session, abort, Flask, Request, \
+    current_app
 from itsdangerous import URLSafeTimedSerializer, BadData
 from werkzeug.datastructures import Authorization
 
@@ -112,6 +113,9 @@ class DigestAuth:
         :return: None.
         :raise UnauthorizedException: When the authentication failed.
         """
+        if "digest_auth_logout" in session:
+            del session["digest_auth_logout"]
+            raise UnauthorizedException("Logging out")
         authorization: Authorization = request.authorization
         if self.use_opaque:
             if authorization.opaque is None:
@@ -251,6 +255,24 @@ class DigestAuth:
         except ModuleNotFoundError:
             raise ModuleNotFoundError(
                 "init_app() is only for Flask-Login integration")
+
+    @staticmethod
+    def logout() -> None:
+        """Logs out the user.
+        This actually causes the next authentication to fail, which forces
+        the browser to ask the user for the username and password again.
+
+        :return: None.
+        """
+        if "user" in session:
+            del session["user"]
+        try:
+            if hasattr(current_app, "login_manager"):
+                from flask_login import logout_user
+                logout_user()
+        except ModuleNotFoundError:
+            pass
+        session["digest_auth_logout"] = True
 
 
 class AuthState:

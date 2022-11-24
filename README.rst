@@ -68,7 +68,7 @@ In your ``my_app.py``:
 
 ::
 
-    from flask import Flask
+    from flask import Flask, request, redirect
     from flask_digest_auth import DigestAuth
 
     app: flask = Flask(__name__)
@@ -88,6 +88,12 @@ In your ``my_app.py``:
     @auth.login_required
     def admin():
         ... (Process the view) ...
+
+    @app.post("/logout")
+    @auth.login_required
+    def logout():
+        auth.logout()
+        return redirect(request.form.get("next"))
 
 
 Example for Larger Applications with ``create_app()`` with Flask-Digest-Auth Alone
@@ -123,7 +129,7 @@ In your ``my_app/views.py``:
 ::
 
     from my_app import auth
-    from flask import Flask, Blueprint
+    from flask import Flask, Blueprint, request, redirect
 
     bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -131,6 +137,12 @@ In your ``my_app/views.py``:
     @auth.login_required
     def admin():
         ... (Process the view) ...
+
+    @app.post("/logout")
+    @auth.login_required
+    def logout():
+        auth.logout()
+        return redirect(request.form.get("next"))
 
     def init_app(app: Flask) -> None:
         app.register_blueprint(bp)
@@ -152,7 +164,7 @@ In your ``my_app.py``:
 
 ::
 
-    from flask import Flask
+    from flask import Flask, request, redirect
     from flask_digest_auth import DigestAuth
     from flask_login import LoginManager
 
@@ -178,6 +190,13 @@ In your ``my_app.py``:
     def admin():
         ... (Process the view) ...
 
+    @app.post("/logout")
+    @flask_login.login_required
+    def logout():
+        auth.logout()
+        # Do not call flask_login.logout_user()
+        return redirect(request.form.get("next"))
+
 
 Example for Larger Applications with ``create_app()`` with Flask-Login Integration
 ----------------------------------------------------------------------------------
@@ -190,6 +209,8 @@ In your ``my_app/__init__.py``:
     from flask_digest_auth import DigestAuth
     from flask_login import LoginManager
 
+    auth: DigestAuth = DigestAuth()
+
     def create_app(test_config = None) -> Flask:
         app: flask = Flask(__name__)
         ... (Configure the Flask application) ...
@@ -201,7 +222,7 @@ In your ``my_app/__init__.py``:
         def load_user(user_id: str) -> t.Optional[User]:
             ... (Load the user with the username) ...
 
-        auth: DigestAuth = DigestAuth(realm=app.config["REALM"])
+        auth.realm = app.config["REALM"]
         auth.init_app(app)
 
         @auth.register_get_password
@@ -215,7 +236,8 @@ In your ``my_app/views.py``:
 ::
 
     import flask_login
-    from flask import Flask, Blueprint
+    from flask import Flask, Blueprint, request, redirect
+    from my_app import auth
 
     bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -223,6 +245,13 @@ In your ``my_app/views.py``:
     @flask_login.login_required
     def admin():
         ... (Process the view) ...
+
+    @app.post("/logout")
+    @flask_login.login_required
+    def logout():
+        auth.logout()
+        # Do not call flask_login.logout_user()
+        return redirect(request.form.get("next"))
 
     def init_app(app: Flask) -> None:
         app.register_blueprint(bp)
@@ -248,6 +277,15 @@ password:
 The username is part of the hash.  If the user changes their username,
 you need to ask their password, to generate and store the new password
 hash.
+
+
+Log Out
+=======
+
+Call ``auth.logout()`` when the user wants to log out.
+Besides the usual log out routine, ``auth.logout()`` actually causes
+the next browser automatic authentication to fail, forcing the browser
+to ask the user for the username and password again.
 
 
 Writing Tests
