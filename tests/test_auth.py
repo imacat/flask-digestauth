@@ -24,6 +24,7 @@ from types import SimpleNamespace
 
 from flask import Response, Flask, g
 from flask_testing import TestCase
+from werkzeug.datastructures import WWWAuthenticate, Authorization
 
 from flask_digest_auth import DigestAuth, make_password_hash, Client
 
@@ -106,3 +107,35 @@ class AuthenticationTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data.decode("UTF-8"),
                          f"Hello, {_USERNAME}! #2")
+
+    def test_stale(self) -> None:
+        """Tests the stale value.
+
+        :return: None.
+        """
+        uri: str = self.app.url_for("auth-1")
+        response: Response = self.client.get(uri)
+        self.assertEqual(response.status_code, 401)
+        www_authenticate: WWWAuthenticate = response.www_authenticate
+        self.assertEqual(www_authenticate.type, "digest")
+        self.assertEqual(www_authenticate.stale, None)
+
+        www_authenticate.nonce = "bad"
+        auth_data: Authorization = Client.make_authorization(
+            www_authenticate, uri, _USERNAME, _PASSWORD)
+        response = self.client.get(uri, auth=auth_data)
+        self.assertEqual(response.status_code, 401)
+        www_authenticate = response.www_authenticate
+        self.assertEqual(www_authenticate.stale, True)
+
+        auth_data = Client.make_authorization(
+            www_authenticate, uri, _USERNAME, _PASSWORD + "2")
+        response = self.client.get(uri, auth=auth_data)
+        self.assertEqual(response.status_code, 401)
+        www_authenticate = response.www_authenticate
+        self.assertEqual(www_authenticate.stale, False)
+
+        auth_data = Client.make_authorization(
+            www_authenticate, uri, _USERNAME, _PASSWORD)
+        response = self.client.get(uri, auth=auth_data)
+        self.assertEqual(response.status_code, 200)
