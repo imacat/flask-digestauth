@@ -6,12 +6,18 @@ Flask HTTP Digest Authentication
 Description
 ===========
 
-*Flask-Digest-Auth* is an HTTP Digest Authentication implementation
+*Flask-Digest-Auth* is an `HTTP Digest Authentication`_ implementation
 for Flask_ applications.  It authenticates the user for the protected
-views.  It works with Flask-Login_, so that log in protection can be
-separated with the authentication mechanism.  You can write Flask
-modules that work with different authentication mechanisms.
+views.
 
+HTTP Digest Authentication is specified in `RFC 2617`_.
+
+Flask-Digest-Auth works with Flask-Login_.  Log in protection can be
+separated with the authentication mechanism.  You can create protected
+Flask modules without knowing the actual authentication mechanisms.
+
+.. _HTTP Digest Authentication: https://en.wikipedia.org/wiki/Digest_access_authentication
+.. _RFC 2617: https://www.rfc-editor.org/rfc/rfc2617
 .. _Flask: https://flask.palletsprojects.com
 .. _Flask-Login: https://flask-login.readthedocs.io
 
@@ -19,14 +25,14 @@ modules that work with different authentication mechanisms.
 Installation
 ============
 
-It's suggested that you install with ``pip``:
+You can install Flask-Digest-Auth with ``pip``:
 
 ::
 
-    pip install flask-digest-auth
+    pip install Flask-Digest-Auth
 
 You may also install the latest source from the
-`flask-digest-auth Github repository`_.
+`Flask-Digest-Auth GitHub repository`_.
 
 ::
 
@@ -34,7 +40,7 @@ You may also install the latest source from the
     cd flask-digest-auth
     pip install .
 
-.. _flask-digest-auth Github repository: https://github.com/imacat/flask-digest-auth
+.. _Flask-Digest-Auth GitHub repository: https://github.com/imacat/flask-digest-auth
 
 
 Flask-Digest-Auth Alone
@@ -77,7 +83,7 @@ Example for Larger Applications with ``create_app()`` with Flask-Digest-Auth Alo
 
 In your ``my_app/__init__.py``:
 
-:::
+::
 
     from flask import Flask
     from flask_digest_auth import DigestAuth
@@ -166,7 +172,7 @@ Example for Larger Applications with ``create_app()`` with Flask-Login Integrati
 
 In your ``my_app/__init__.py``:
 
-:::
+::
 
     from flask import Flask
     from flask_digest_auth import DigestAuth
@@ -209,11 +215,9 @@ In your ``my_app/views.py``:
     def init_app(app: Flask) -> None:
         app.register_blueprint(bp)
 
-The views only depend on Flask-Login, but not its underlying
-authentication mechanism.  You can always change the
-authentication mechanism without changing the views, or release a
-protected Flask module without specifying the authentication
-mechanism.
+The views only depend on Flask-Login, but not the actual
+authentication mechanism.  You can change the actual authentication
+mechanism without changing the views.
 
 
 Writing Tests
