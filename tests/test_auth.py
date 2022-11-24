@@ -71,19 +71,19 @@ class AuthenticationTestCase(TestCase):
             return SimpleNamespace(username=username) if username in user_db \
                 else None
 
-        @app.get("/login-required-1/auth", endpoint="auth-1")
+        @app.get("/admin-1/auth", endpoint="admin-1")
         @auth.login_required
-        def login_required_1() -> str:
-            """The first dummy view.
+        def admin_1() -> str:
+            """The first administration section.
 
             :return: The response.
             """
             return f"Hello, {g.user.username}! #1"
 
-        @app.get("/login-required-2/auth", endpoint="auth-2")
+        @app.get("/admin-2/auth", endpoint="admin-2")
         @auth.login_required
-        def login_required_2() -> str:
-            """The second dummy view.
+        def admin_2() -> str:
+            """The second administration section.
 
             :return: The response.
             """
@@ -96,14 +96,14 @@ class AuthenticationTestCase(TestCase):
 
         :return: None.
         """
-        response: Response = self.client.get(self.app.url_for("auth-1"))
+        response: Response = self.client.get(self.app.url_for("admin-1"))
         self.assertEqual(response.status_code, 401)
         response = self.client.get(
-            self.app.url_for("auth-1"), digest_auth=(_USERNAME, _PASSWORD))
+            self.app.url_for("admin-1"), digest_auth=(_USERNAME, _PASSWORD))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data.decode("UTF-8"),
                          f"Hello, {_USERNAME}! #1")
-        response: Response = self.client.get(self.app.url_for("auth-2"))
+        response: Response = self.client.get(self.app.url_for("admin-2"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data.decode("UTF-8"),
                          f"Hello, {_USERNAME}! #2")
@@ -113,29 +113,33 @@ class AuthenticationTestCase(TestCase):
 
         :return: None.
         """
-        uri: str = self.app.url_for("auth-1")
-        response: Response = self.client.get(uri)
+        admin_uri: str = self.app.url_for("admin-1")
+        response: Response
+        www_authenticate: WWWAuthenticate
+        auth_data: Authorization
+
+        response = self.client.get(admin_uri)
         self.assertEqual(response.status_code, 401)
-        www_authenticate: WWWAuthenticate = response.www_authenticate
+        www_authenticate = response.www_authenticate
         self.assertEqual(www_authenticate.type, "digest")
         self.assertEqual(www_authenticate.stale, None)
 
         www_authenticate.nonce = "bad"
-        auth_data: Authorization = Client.make_authorization(
-            www_authenticate, uri, _USERNAME, _PASSWORD)
-        response = self.client.get(uri, auth=auth_data)
+        auth_data = Client.make_authorization(
+            www_authenticate, admin_uri, _USERNAME, _PASSWORD)
+        response = self.client.get(admin_uri, auth=auth_data)
         self.assertEqual(response.status_code, 401)
         www_authenticate = response.www_authenticate
         self.assertEqual(www_authenticate.stale, True)
 
         auth_data = Client.make_authorization(
-            www_authenticate, uri, _USERNAME, _PASSWORD + "2")
-        response = self.client.get(uri, auth=auth_data)
+            www_authenticate, admin_uri, _USERNAME, _PASSWORD + "2")
+        response = self.client.get(admin_uri, auth=auth_data)
         self.assertEqual(response.status_code, 401)
         www_authenticate = response.www_authenticate
         self.assertEqual(www_authenticate.stale, False)
 
         auth_data = Client.make_authorization(
-            www_authenticate, uri, _USERNAME, _PASSWORD)
-        response = self.client.get(uri, auth=auth_data)
+            www_authenticate, admin_uri, _USERNAME, _PASSWORD)
+        response = self.client.get(admin_uri, auth=auth_data)
         self.assertEqual(response.status_code, 200)
