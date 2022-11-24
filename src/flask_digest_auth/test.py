@@ -49,14 +49,14 @@ class Client(WerkzeugClient):
             return response
         if hasattr(g, "_login_user"):
             delattr(g, "_login_user")
-        auth_data: Authorization = self.__class__.__make_authorization(
+        auth_data: Authorization = self.__class__.make_authorization(
             www_authenticate, args[0], digest_auth[0], digest_auth[1])
         response = super(Client, self).open(*args, auth=auth_data, **kwargs)
         return response
 
     @staticmethod
-    def __make_authorization(www_authenticate: WWWAuthenticate, uri: str,
-                             username: str, password: str) -> Authorization:
+    def make_authorization(www_authenticate: WWWAuthenticate, uri: str,
+                           username: str, password: str) -> Authorization:
         """Composes and returns the request authorization.
 
         :param www_authenticate: The WWW-Authenticate response.
