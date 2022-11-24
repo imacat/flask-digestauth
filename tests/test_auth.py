@@ -118,7 +118,7 @@ class AuthenticationTestCase(TestCase):
         www_authenticate: WWWAuthenticate
         auth_data: Authorization
 
-        response = self.client.get(admin_uri)
+        response = super(Client, self.client).get(admin_uri)
         self.assertEqual(response.status_code, 401)
         www_authenticate = response.www_authenticate
         self.assertEqual(www_authenticate.type, "digest")
@@ -128,7 +128,7 @@ class AuthenticationTestCase(TestCase):
         www_authenticate.nonce = "bad"
         auth_data = Client.make_authorization(
             www_authenticate, admin_uri, _USERNAME, _PASSWORD)
-        response = self.client.get(admin_uri, auth=auth_data)
+        response = super(Client, self.client).get(admin_uri, auth=auth_data)
         self.assertEqual(response.status_code, 401)
         www_authenticate = response.www_authenticate
         self.assertEqual(www_authenticate.stale, True)
@@ -136,7 +136,7 @@ class AuthenticationTestCase(TestCase):
 
         auth_data = Client.make_authorization(
             www_authenticate, admin_uri, _USERNAME, _PASSWORD + "2")
-        response = self.client.get(admin_uri, auth=auth_data)
+        response = super(Client, self.client).get(admin_uri, auth=auth_data)
         self.assertEqual(response.status_code, 401)
         www_authenticate = response.www_authenticate
         self.assertEqual(www_authenticate.stale, False)
@@ -144,5 +144,5 @@ class AuthenticationTestCase(TestCase):
 
         auth_data = Client.make_authorization(
             www_authenticate, admin_uri, _USERNAME, _PASSWORD)
-        response = self.client.get(admin_uri, auth=auth_data)
+        response = super(Client, self.client).get(admin_uri, auth=auth_data)
         self.assertEqual(response.status_code, 200)
