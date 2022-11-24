@@ -143,8 +143,8 @@ class FlaskLoginTestCase(TestCase):
         self.assertEqual(response.data.decode("UTF-8"),
                          f"Hello, {_USERNAME}! #2")
 
-    def test_stale(self) -> None:
-        """Tests the stale value.
+    def test_stale_opaque(self) -> None:
+        """Tests the stale and opaque value.
 
         :return: None.
         """
@@ -161,6 +161,7 @@ class FlaskLoginTestCase(TestCase):
         www_authenticate = response.www_authenticate
         self.assertEqual(www_authenticate.type, "digest")
         self.assertEqual(www_authenticate.stale, None)
+        opaque: str = www_authenticate.opaque
 
         if hasattr(g, "_login_user"):
             delattr(g, "_login_user")
@@ -171,6 +172,7 @@ class FlaskLoginTestCase(TestCase):
         self.assertEqual(response.status_code, 401)
         www_authenticate = response.www_authenticate
         self.assertEqual(www_authenticate.stale, True)
+        self.assertEqual(www_authenticate.opaque, opaque)
 
         if hasattr(g, "_login_user"):
             delattr(g, "_login_user")
@@ -180,6 +182,7 @@ class FlaskLoginTestCase(TestCase):
         self.assertEqual(response.status_code, 401)
         www_authenticate = response.www_authenticate
         self.assertEqual(www_authenticate.stale, False)
+        self.assertEqual(www_authenticate.opaque, opaque)
 
         if hasattr(g, "_login_user"):
             delattr(g, "_login_user")

@@ -108,8 +108,8 @@ class AuthenticationTestCase(TestCase):
         self.assertEqual(response.data.decode("UTF-8"),
                          f"Hello, {_USERNAME}! #2")
 
-    def test_stale(self) -> None:
-        """Tests the stale value.
+    def test_stale_opaque(self) -> None:
+        """Tests the stale and opaque value.
 
         :return: None.
         """
@@ -123,6 +123,7 @@ class AuthenticationTestCase(TestCase):
         www_authenticate = response.www_authenticate
         self.assertEqual(www_authenticate.type, "digest")
         self.assertEqual(www_authenticate.stale, None)
+        opaque: str = www_authenticate.opaque
 
         www_authenticate.nonce = "bad"
         auth_data = Client.make_authorization(
@@ -131,6 +132,7 @@ class AuthenticationTestCase(TestCase):
         self.assertEqual(response.status_code, 401)
         www_authenticate = response.www_authenticate
         self.assertEqual(www_authenticate.stale, True)
+        self.assertEqual(www_authenticate.opaque, opaque)
 
         auth_data = Client.make_authorization(
             www_authenticate, admin_uri, _USERNAME, _PASSWORD + "2")
@@ -138,6 +140,7 @@ class AuthenticationTestCase(TestCase):
         self.assertEqual(response.status_code, 401)
         www_authenticate = response.www_authenticate
         self.assertEqual(www_authenticate.stale, False)
+        self.assertEqual(www_authenticate.opaque, opaque)
 
         auth_data = Client.make_authorization(
             www_authenticate, admin_uri, _USERNAME, _PASSWORD)
