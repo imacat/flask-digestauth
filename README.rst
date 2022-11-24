@@ -12,6 +12,18 @@ views.
 
 HTTP Digest Authentication is specified in `RFC 2617`_.
 
+HTTP Digest Authentication has the advantage that it does not send the
+actual password to the server, which greatly enhances the security.
+It uses the challenge-response authentication scheme.  The client
+returns the response calculated from the challenge and the password,
+but not the original password.
+
+Log in forms has the advantage of freedom, in the senses of both the
+visual design and the actual implementation.  You may implement your
+own challenge-response log in form, but then you are reinventing the
+wheels.  If a pretty log in form is not critical to your project, HTTP
+Digest Authentication should be a good choice.
+
 Flask-Digest-Auth works with Flask-Login_.  Log in protection can be
 separated with the authentication mechanism.  You can create protected
 Flask modules without knowing the actual authentication mechanisms.
