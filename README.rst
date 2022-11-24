@@ -232,6 +232,24 @@ authentication mechanism.  You can change the actual authentication
 mechanism without changing the views.
 
 
+Setting the Password Hash
+=========================
+
+The password hash of the HTTP Digest Authentication is composed of the
+realm, the username, and the password.  Example for setting the
+password:
+
+::
+
+    from flask_digest_auth import make_password_hash
+
+    user.password = make_password_hash(realm, username, password)
+
+The username is part of the hash.  If the user changes their username,
+you need to ask their password, to generate and store the new password
+hash.
+
+
 Writing Tests
 =============
 
