@@ -33,7 +33,13 @@ _PASSWORD: str = "Circle Of Life"
 
 
 class User:
+    """A dummy user."""
+
     def __init__(self, username: str):
+        """Constructs a dummy user.
+
+        :param username: The username.
+        """
         self.username: str = username
         self.is_authenticated: bool = True
         self.is_active: bool = True
