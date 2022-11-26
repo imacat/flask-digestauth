@@ -60,6 +60,8 @@ Flask-Digest-Auth Alone
 
 Flask-Digest-Auth can authenticate the users alone.
 
+The currently logged-in user can be retrieved at ``g.user``, if any.
+
 
 Example for Simple Applications with Flask-Digest-Auth Alone
 ------------------------------------------------------------
@@ -88,7 +90,7 @@ In your ``my_app.py``:
     @app.get("/admin")
     @auth.login_required
     def admin():
-        ... (Process the view) ...
+        return f"Hello, {g.user.username}!"
 
     @app.post("/logout")
     @auth.login_required
@@ -138,7 +140,7 @@ In your ``my_app/views.py``:
     @bp.get("/admin")
     @auth.login_required
     def admin():
-        ... (Process the view) ...
+        return f"Hello, {g.user.username}!"
 
     @app.post("/logout")
     @auth.login_required
@@ -161,6 +163,9 @@ authentication mechanism as it sees fit.
 ``login_manager.init_app(app)`` must be called before
 ``auth.init_app(app)``.
 
+The currently logged-in user can be retrieved at
+``flask_login.current_user``, if any.
+
 
 Example for Simple Applications with Flask-Login Integration
 ------------------------------------------------------------
@@ -169,14 +174,14 @@ In your ``my_app.py``:
 
 ::
 
+    import flask_login
     from flask import Flask, request, redirect
     from flask_digest_auth import DigestAuth
-    from flask_login import LoginManager
 
     app: flask = Flask(__name__)
     ... (Configure the Flask application) ...
 
-    login_manager: LoginManager = LoginManager()
+    login_manager: flask_login.LoginManager = flask_login.LoginManager()
     login_manager.init_app(app)
 
     @login_manager.user_loader
@@ -191,9 +196,9 @@ In your ``my_app.py``:
         ... (Load the password hash) ...
 
     @app.get("/admin")
-    @login_manager.login_required
+    @flask_login.login_required
     def admin():
-        ... (Process the view) ...
+        return f"Hello, {flask_login.current_user.get_id()}!"
 
     @app.post("/logout")
     @flask_login.login_required
@@ -249,7 +254,7 @@ In your ``my_app/views.py``:
     @bp.get("/admin")
     @flask_login.login_required
     def admin():
-        ... (Process the view) ...
+        return f"Hello, {flask_login.current_user.get_id()}!"
 
     @app.post("/logout")
     @flask_login.login_required

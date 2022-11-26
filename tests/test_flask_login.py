@@ -110,7 +110,7 @@ class FlaskLoginTestCase(TestCase):
 
             :return: The response.
             """
-            return f"Hello, {flask_login.current_user.username}! #1"
+            return f"Hello, {flask_login.current_user.get_id()}! #1"
 
         @app.get("/admin-2/auth", endpoint="admin-2")
         @flask_login.login_required
@@ -119,7 +119,7 @@ class FlaskLoginTestCase(TestCase):
 
             :return: The response.
             """
-            return f"Hello, {flask_login.current_user.username}! #2"
+            return f"Hello, {flask_login.current_user.get_id()}! #2"
 
         @app.post("/logout", endpoint="logout")
         @flask_login.login_required
