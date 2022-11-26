@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import sys
 import typing as t
-from abc import ABC, abstractmethod
 from functools import wraps
 from random import random
 from secrets import token_urlsafe
@@ -36,11 +35,10 @@ from flask_digest_auth.algo import calc_response
 from flask_digest_auth.exception import UnauthorizedException
 
 
-class BasePasswordHashGetter(ABC):
+class BasePasswordHashGetter:
     """The base password hash getter."""
 
     @staticmethod
-    @abstractmethod
     def __call__(username: str) -> t.Optional[str]:
         """Returns the password hash of a user.
 
@@ -49,13 +47,14 @@ class BasePasswordHashGetter(ABC):
         :raise UnboundLocalError: When the password hash getter function is
             not registered yet.
         """
+        raise UnboundLocalError("The function to return the password hash"
+                                " was not registered yet.")
 
 
-class BaseUserGetter(ABC):
+class BaseUserGetter:
     """The base user getter."""
 
     @staticmethod
-    @abstractmethod
     def __call__(username: str) -> t.Optional[t.Any]:
         """Returns a user.
 
@@ -64,6 +63,8 @@ class BaseUserGetter(ABC):
         :raise UnboundLocalError: When the user getter function is not
             registered yet.
         """
+        raise UnboundLocalError("The function to return the user"
+                                " was not registered yet.")
 
 
 class DigestAuth:
@@ -83,41 +84,9 @@ class DigestAuth:
         self.domain: t.List[str] = []
         self.qop: t.List[str] = ["auth", "auth-int"]
         self.app: t.Optional[Flask] = None
-
-        class DummyPasswordHashGetter(BasePasswordHashGetter):
-            """The dummy password hash getter."""
-
-            @staticmethod
-            def __call__(username: str) -> t.Optional[str]:
-                """Returns the password hash of a user.
-
-                :param username: The username.
-                :return: The password hash, or None if the user does not exist.
-                :raise UnboundLocalError: When the password hash getter function
-                    is not registered yet.
-                """
-                raise UnboundLocalError("The function to return the password"
-                                        " hash was not registered yet.")
-
         self.__get_password_hash: BasePasswordHashGetter \
-            = DummyPasswordHashGetter()
-
-        class DummyUserGetter(BaseUserGetter):
-            """The dummy user getter."""
-
-            @staticmethod
-            def __call__(username: str) -> t.Optional[t.Any]:
-                """Returns a user.
-
-                :param username: The username.
-                :return: The user, or None if the user does not exist.
-                :raise UnboundLocalError: When the user getter function is not
-                    registered yet.
-                """
-                raise UnboundLocalError("The function to return the user"
-                                        " was not registered yet.")
-
-        self.__get_user: BaseUserGetter = DummyUserGetter()
+            = BasePasswordHashGetter()
+        self.__get_user: BaseUserGetter = BaseUserGetter()
 
     def login_required(self, view) -> t.Callable:
         """The view decorator for HTTP digest authentication.

@@ -12,6 +12,10 @@ views.
 
 HTTP Digest Authentication is specified in `RFC 2617`_.
 
+
+Why HTTP Digest Authentication?
+-------------------------------
+
 HTTP Digest Authentication has the advantage that it does not send the
 actual password to the server, which greatly enhances the security.
 It uses the challenge-response authentication scheme.  The client
@@ -27,6 +31,40 @@ Digest Authentication should be a good choice.
 Flask-Digest-Auth works with Flask-Login_.  Log in protection can be
 separated with the authentication mechanism.  You can create protected
 Flask modules without knowing the actual authentication mechanisms.
+
+
+Features
+--------
+
+There are a couple of Flask HTTP digest authentication
+implementations.  Flask-Digest-Auth has the following features:
+
+
+Flask-Login Integration
+#######################
+
+Flask-Digest-Auth features Flask-Login integration.  The views
+can be totally independent with the actual authentication mechanism.
+You can write a Flask module that requires log in, without specify
+the actual authentication mechanism.  The application can specify
+either HTTP Digest Authentication, or the log in forms, as needed.
+
+
+Session Integration
+###################
+
+Flask-Digest-Auth features session integration.  The user log in
+is remembered in the session.  The authentication information is not
+requested again.  This is different to the practice of the HTTP Digest
+Authentication, but is convenient for the log in accounting.
+
+
+Log Out Support
+###############
+
+Flask-Digest-Auth supports log out.  The user will be prompted for
+new username and password.
+
 
 .. _HTTP Digest Authentication: https://en.wikipedia.org/wiki/Digest_access_authentication
 .. _RFC 2617: https://www.rfc-editor.org/rfc/rfc2617
