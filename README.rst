@@ -66,6 +66,12 @@ Flask-Digest-Auth supports log out.  The user will be prompted for
 new username and password.
 
 
+Log In Bookkeeping
+##################
+
+You can register a callback to run when the user logs in.
+
+
 .. _HTTP Digest Authentication: https://en.wikipedia.org/wiki/Digest_access_authentication
 .. _RFC 2617: https://www.rfc-editor.org/rfc/rfc2617
 .. _Flask: https://flask.palletsprojects.com
@@ -334,6 +340,19 @@ Call ``auth.logout()`` when the user wants to log out.
 Besides the usual log out routine, ``auth.logout()`` actually causes
 the next browser automatic authentication to fail, forcing the browser
 to ask the user for the username and password again.
+
+
+Log In Bookkeeping
+=================#
+
+You can register a callback to run when the user logs in, for ex.,
+logging the log in event, adding the log in counter, etc.
+
+::
+
+    @auth.register_on_login
+    def on_login(user: User) -> None:
+        user.visits = user.visits + 1
 
 
 Writing Tests

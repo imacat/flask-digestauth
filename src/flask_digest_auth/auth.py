@@ -67,6 +67,18 @@ class BaseUserGetter:
                                 " was not registered yet.")
 
 
+class BaseOnLogInCallback:
+    """The base callback when the user logs in."""
+
+    @staticmethod
+    def __call__(user: t.Any) -> None:
+        """Runs the callback when the user logs in.
+
+        :param user: The logged-in user.
+        :return: None.
+        """
+
+
 class DigestAuth:
     """The HTTP digest authentication."""
 
@@ -87,6 +99,7 @@ class DigestAuth:
         self.__get_password_hash: BasePasswordHashGetter \
             = BasePasswordHashGetter()
         self.__get_user: BaseUserGetter = BaseUserGetter()
+        self.__on_login: BaseOnLogInCallback = BaseOnLogInCallback()
 
     def login_required(self, view) -> t.Callable:
         """The view decorator for HTTP digest authentication.
@@ -125,7 +138,9 @@ class DigestAuth:
                             "Not an HTTP digest authorization")
                     self.authenticate(state)
                     session["user"] = authorization.username
-                    g.user = self.__get_user(authorization.username)
+                    user = self.__get_user(authorization.username)
+                    g.user = user
+                    self.__on_login(user)
                     return view(*args, **kwargs)
                 except UnauthorizedException as e:
                     if len(e.args) > 0:
@@ -257,6 +272,27 @@ class DigestAuth:
 
         self.__get_user = UserGetter()
 
+    def register_on_login(self, func: t.Callable[[t.Any], None]) -> None:
+        """Registers the callback when the user logs in.
+
+        :param func: The callback given the logged-in user.
+        :return: None.
+        """
+
+        class OnLogInCallback:
+            """The callback when the user logs in."""
+
+            @staticmethod
+            def __call__(user: t.Any) -> None:
+                """Runs the callback when the user logs in.
+
+                :param user: The logged-in user.
+                :return: None.
+                """
+                func(user)
+
+        self.__on_login = OnLogInCallback()
+
     def init_app(self, app: Flask) -> None:
         """Initializes the Flask application.
 
@@ -303,6 +339,7 @@ class DigestAuth:
                     user = login_manager.user_callback(
                         authorization.username)
                     login_user(user)
+                    self.__on_login(user)
                     return user
                 except UnauthorizedException as e:
                     if str(e) != "":

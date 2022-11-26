@@ -20,7 +20,6 @@
 """
 import typing as t
 from secrets import token_urlsafe
-from types import SimpleNamespace
 
 from flask import Response, Flask, g, redirect, request
 from flask_testing import TestCase
@@ -31,6 +30,20 @@ from flask_digest_auth import DigestAuth, make_password_hash, Client
 _REALM: str = "testrealm@host.com"
 _USERNAME: str = "Mufasa"
 _PASSWORD: str = "Circle Of Life"
+
+
+class User:
+    """A dummy user"""
+
+    def __init__(self, username: str, password_hash: str):
+        """Constructs a dummy user.
+
+        :param username: The username.
+        :param password_hash: The password hash.
+        """
+        self.username: str = username
+        self.password_hash: str = password_hash
+        self.visits: int = 0
 
 
 class AuthenticationTestCase(TestCase):
@@ -50,8 +63,9 @@ class AuthenticationTestCase(TestCase):
 
         auth: DigestAuth = DigestAuth(realm=_REALM)
         auth.init_app(app)
-        user_db: t.Dict[str, str] \
-            = {_USERNAME: make_password_hash(_REALM, _USERNAME, _PASSWORD)}
+        user_db: t.Dict[str, User] \
+            = {_USERNAME: User(
+                   _USERNAME, make_password_hash(_REALM, _USERNAME, _PASSWORD))}
 
         @auth.register_get_password
         def get_password_hash(username: str) -> t.Optional[str]:
@@ -60,7 +74,8 @@ class AuthenticationTestCase(TestCase):
             :param username: The username.
             :return: The password hash, or None if the user does not exist.
             """
-            return user_db[username] if username in user_db else None
+            return user_db[username].password_hash if username in user_db \
+                else None
 
         @auth.register_get_user
         def get_user(username: str) -> t.Optional[t.Any]:
@@ -69,8 +84,16 @@ class AuthenticationTestCase(TestCase):
             :param username: The username.
             :return: The user, or None if the user does not exist.
             """
-            return SimpleNamespace(username=username) if username in user_db \
-                else None
+            return user_db[username] if username in user_db else None
+
+        @auth.register_on_login
+        def on_login(user: User):
+            """The callback when the user logs in.
+
+            :param user: The logged-in user.
+            :return: None.
+            """
+            user.visits = user.visits + 1
 
         @app.get("/admin-1/auth", endpoint="admin-1")
         @auth.login_required
@@ -118,6 +141,7 @@ class AuthenticationTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data.decode("UTF-8"),
                          f"Hello, {_USERNAME}! #2")
+        self.assertEqual(g.user.visits, 1)
 
     def test_stale_opaque(self) -> None:
         """Tests the stale and opaque value.
@@ -194,3 +218,4 @@ class AuthenticationTestCase(TestCase):
 
         response = self.client.get(admin_uri)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(g.user.visits, 2)

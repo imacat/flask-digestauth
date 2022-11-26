@@ -21,6 +21,7 @@
 import typing as t
 from secrets import token_urlsafe
 
+import flask_login
 from flask import Response, Flask, g, redirect, request
 from flask_testing import TestCase
 from werkzeug.datastructures import WWWAuthenticate, Authorization
@@ -35,12 +36,15 @@ _PASSWORD: str = "Circle Of Life"
 class User:
     """A dummy user."""
 
-    def __init__(self, username: str):
+    def __init__(self, username: str, password_hash: str):
         """Constructs a dummy user.
 
         :param username: The username.
+        :param password_hash: The password hash.
         """
         self.username: str = username
+        self.password_hash: str = password_hash
+        self.visits: int = 0
         self.is_authenticated: bool = True
         self.is_active: bool = True
         self.is_anonymous: bool = False
@@ -82,8 +86,9 @@ class FlaskLoginTestCase(TestCase):
         auth: DigestAuth = DigestAuth(realm=_REALM)
         auth.init_app(app)
 
-        user_db: t.Dict[str, str] \
-            = {_USERNAME: make_password_hash(_REALM, _USERNAME, _PASSWORD)}
+        user_db: t.Dict[str, User] \
+            = {_USERNAME: User(
+                   _USERNAME, make_password_hash(_REALM, _USERNAME, _PASSWORD))}
 
         @auth.register_get_password
         def get_password_hash(username: str) -> t.Optional[str]:
@@ -92,7 +97,17 @@ class FlaskLoginTestCase(TestCase):
             :param username: The username.
             :return: The password hash, or None if the user does not exist.
             """
-            return user_db[username] if username in user_db else None
+            return user_db[username].password_hash if username in user_db \
+                else None
+
+        @auth.register_on_login
+        def on_login(user: User):
+            """The callback when the user logs in.
+
+            :param user: The logged-in user.
+            :return: None.
+            """
+            user.visits = user.visits + 1
 
         @login_manager.user_loader
         def load_user(user_id: str) -> t.Optional[User]:
@@ -101,7 +116,7 @@ class FlaskLoginTestCase(TestCase):
             :param user_id: The username.
             :return: The user, or None if the user does not exist.
             """
-            return User(user_id) if user_id in user_db else None
+            return user_db[user_id] if user_id in user_db else None
 
         @app.get("/admin-1/auth", endpoint="admin-1")
         @flask_login.login_required
@@ -152,6 +167,7 @@ class FlaskLoginTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data.decode("UTF-8"),
                          f"Hello, {_USERNAME}! #2")
+        self.assertEqual(flask_login.current_user.visits, 1)
 
     def test_stale_opaque(self) -> None:
         """Tests the stale and opaque value.
@@ -237,3 +253,4 @@ class FlaskLoginTestCase(TestCase):
 
         response = self.client.get(admin_uri)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(flask_login.current_user.visits, 2)
