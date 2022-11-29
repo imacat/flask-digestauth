@@ -24,8 +24,7 @@ from __future__ import annotations
 import sys
 import typing as t
 from functools import wraps
-from random import random
-from secrets import token_urlsafe
+from secrets import token_urlsafe, randbits
 
 from flask import g, request, Response, session, abort, Flask, Request
 from itsdangerous import URLSafeTimedSerializer, BadData
@@ -206,9 +205,10 @@ class DigestAuth:
         """
         opaque: t.Optional[str] = None if not self.use_opaque else \
             (state.opaque if state.opaque is not None
-             else self.serializer.dumps(random(), salt="opaque"))
+             else self.serializer.dumps(randbits(32), salt="opaque"))
         nonce: str = self.serializer.dumps(
-            random(), salt="nonce" if opaque is None else f"nonce-{opaque}")
+            randbits(32),
+            salt="nonce" if opaque is None else f"nonce-{opaque}")
 
         header: str = f"Digest realm=\"{self.realm}\""
         if len(self.domain) > 0:
