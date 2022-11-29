@@ -66,9 +66,8 @@ class Client(WerkzeugClient):
         :return: The request authorization.
         """
         qop: t.Optional[t.Literal["auth", "auth-int"]] = None
-        if www_authenticate.qop is not None:
-            if "auth" in www_authenticate.qop:
-                qop = "auth"
+        if www_authenticate.qop is not None and "auth" in www_authenticate.qop:
+            qop = "auth"
 
         cnonce: t.Optional[str] = None
         if qop is not None or www_authenticate.algorithm == "MD5-sess":
