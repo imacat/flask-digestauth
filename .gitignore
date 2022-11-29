@@ -28,5 +28,6 @@ instance
 
 .DS_Store
 .idea
+.scannerwork
 
 excludes
