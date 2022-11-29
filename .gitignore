@@ -23,11 +23,11 @@ dist
 .pytest_cache
 venv
 
-flask_session
-instance
-
 .DS_Store
 .idea
+
+instance
+flask_session
 
 .scannerwork
 sonar-project.properties
