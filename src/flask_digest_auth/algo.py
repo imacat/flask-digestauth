@@ -61,6 +61,16 @@ def calc_response(
         cnonce or nc is missing with the auth or auth-int qop.
     """
 
+    def validate_required(field: t.Optional[str], error: str) -> None:
+        """Validates a required field.
+
+        :param field: The field that is required.
+        :param error: The error message.
+        :return: None.
+        """
+        if field is None:
+            raise UnauthorizedException(error)
+
     def calc_ha1() -> str:
         """Calculates and returns the first hash.
 
@@ -68,16 +78,13 @@ def calc_response(
         :raise UnauthorizedException: When the cnonce is missing with the MD5-sess
             algorithm.
         """
-        if algorithm is None or algorithm == "MD5":
-            return password_hash
         if algorithm == "MD5-sess":
-            if cnonce is None:
-                raise UnauthorizedException(
-                    f"Missing \"cnonce\" with algorithm=\"{algorithm}\"")
+            validate_required(
+                cnonce, f"Missing \"cnonce\" with algorithm=\"{algorithm}\"")
             return md5(f"{password_hash}:{nonce}:{cnonce}".encode("utf8")) \
                 .hexdigest()
-        raise UnauthorizedException(
-            f"Unsupported algorithm=\"{algorithm}\"")
+        # algorithm is None or algorithm == "MD5"
+        return password_hash
 
     def calc_ha2() -> str:
         """Calculates the second hash.
@@ -86,30 +93,20 @@ def calc_response(
         :raise UnauthorizedException: When the body is missing with
             qop="auth-int".
         """
-        if qop is None or qop == "auth":
-            return md5(f"{method}:{uri}".encode("utf8")).hexdigest()
         if qop == "auth-int":
-            if body is None:
-                raise UnauthorizedException(
-                    f"Missing \"body\" with qop=\"{qop}\"")
+            validate_required(body, f"Missing \"body\" with qop=\"{qop}\"")
             return md5(
                 f"{method}:{uri}:{md5(body).hexdigest()}".encode("utf8")) \
                 .hexdigest()
-        raise UnauthorizedException(f"Unsupported qop=\"{qop}\"")
+        # qop is None or qop == "auth"
+        return md5(f"{method}:{uri}".encode("utf8")).hexdigest()
 
     ha1: str = calc_ha1()
     ha2: str = calc_ha2()
-    if qop is None:
-        return md5(f"{ha1}:{nonce}:{ha2}".encode("utf8")).hexdigest()
     if qop == "auth" or qop == "auth-int":
-        if cnonce is None:
-            raise UnauthorizedException(
-                f"Missing \"cnonce\" with the qop=\"{qop}\"")
-        if nc is None:
-            raise UnauthorizedException(
-                f"Missing \"nc\" with the qop=\"{qop}\"")
+        validate_required(cnonce, f"Missing \"cnonce\" with the qop=\"{qop}\"")
+        validate_required(nc, f"Missing \"nc\" with the qop=\"{qop}\"")
         return md5(f"{ha1}:{nonce}:{nc}:{cnonce}:{qop}:{ha2}".encode("utf8"))\
             .hexdigest()
-    if cnonce is None:
-        raise UnauthorizedException(
-            f"Unsupported qop=\"{qop}\"")
+    # qop is None
+    return md5(f"{ha1}:{nonce}:{ha2}".encode("utf8")).hexdigest()
