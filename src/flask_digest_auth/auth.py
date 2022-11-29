@@ -203,9 +203,19 @@ class DigestAuth:
         :param state: The authorization state.
         :return: The WWW-Authenticate response header.
         """
-        opaque: t.Optional[str] = None if not self.use_opaque else \
-            (state.opaque if state.opaque is not None
-             else self.serializer.dumps(randbits(32), salt="opaque"))
+
+        def get_opaque() -> t.Optional[str]:
+            """Returns the opaque value.
+
+            :return: The opaque value.
+            """
+            if not self.use_opaque:
+                return None
+            if state.opaque is not None:
+                return state.opaque
+            return self.serializer.dumps(randbits(32), salt="opaque")
+
+        opaque: t.Optional[str] = get_opaque()
         nonce: str = self.serializer.dumps(
             randbits(32),
             salt="nonce" if opaque is None else f"nonce-{opaque}")
