@@ -120,6 +120,7 @@ class DigestAuth:
                 raise NoLogInException
             user: t.Optional[t.Any] = self.__get_user(session["user"])
             if user is None:
+                del session["user"]
                 raise NoLogInException
             return user
 
