@@ -343,7 +343,7 @@ to ask the user for the username and password again.
 
 
 Log In Bookkeeping
-=================#
+==================
 
 You can register a callback to run when the user logs in, for ex.,
 logging the log in event, adding the log in counter, etc.
@@ -401,6 +401,7 @@ Copyright
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.
+
 
 Authors
 =======
