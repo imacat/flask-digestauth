@@ -110,7 +110,7 @@ class DigestAuth:
         class NoLogInException(Exception):
             """The exception thrown when the user is not authorized."""
 
-        def get_logged_in_user() -> t.Optional[t.Any]:
+        def get_logged_in_user() -> t.Any:
             """Returns the currently logged-in user.
 
             :return: The currently logged-in user.
