@@ -63,9 +63,8 @@ class AuthenticationTestCase(TestCase):
 
         auth: DigestAuth = DigestAuth(realm=_REALM)
         auth.init_app(app)
-        user_db: t.Dict[str, User] \
-            = {_USERNAME: User(
-                   _USERNAME, make_password_hash(_REALM, _USERNAME, _PASSWORD))}
+        pw_hash: str = make_password_hash(_REALM, _USERNAME, _PASSWORD)
+        user_db: t.Dict[str, User] = {_USERNAME: User(_USERNAME, pw_hash)}
 
         @auth.register_get_password
         def get_password_hash(username: str) -> t.Optional[str]:
