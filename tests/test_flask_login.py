@@ -21,7 +21,6 @@
 import typing as t
 from secrets import token_urlsafe
 
-import flask_login
 from flask import Response, Flask, g, redirect, request
 from flask_testing import TestCase
 from werkzeug.datastructures import WWWAuthenticate, Authorization
@@ -86,8 +85,9 @@ class FlaskLoginTestCase(TestCase):
         auth: DigestAuth = DigestAuth(realm=_REALM)
         auth.init_app(app)
 
-        pw_hash: str = make_password_hash(_REALM, _USERNAME, _PASSWORD)
-        user_db: t.Dict[str, User] = {_USERNAME: User(_USERNAME, pw_hash)}
+        self.user: User = User(
+            _USERNAME, make_password_hash(_REALM, _USERNAME, _PASSWORD))
+        user_db: t.Dict[str, User] = {_USERNAME: self.user}
 
         @auth.register_get_password
         def get_password_hash(username: str) -> t.Optional[str]:
@@ -166,7 +166,7 @@ class FlaskLoginTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data.decode("UTF-8"),
                          f"Hello, {_USERNAME}! #2")
-        self.assertEqual(flask_login.current_user.visits, 1)
+        self.assertEqual(self.user.visits, 1)
 
     def test_stale_opaque(self) -> None:
         """Tests the stale and opaque value.
@@ -252,4 +252,4 @@ class FlaskLoginTestCase(TestCase):
 
         response = self.client.get(admin_uri)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(flask_login.current_user.visits, 2)
+        self.assertEqual(self.user.visits, 2)
