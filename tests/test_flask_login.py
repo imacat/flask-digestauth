@@ -221,6 +221,9 @@ class FlaskLoginTestCase(TestCase):
 
         :return: None.
         """
+        if not self.has_flask_login:
+            self.skipTest("Skipped without Flask-Login.")
+
         admin_uri: str = self.app.url_for("admin-1")
         logout_uri: str = self.app.url_for("logout")
         response: Response
