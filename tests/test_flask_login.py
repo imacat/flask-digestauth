@@ -35,14 +35,15 @@ _PASSWORD: str = "Circle Of Life"
 class User:
     """A dummy user."""
 
-    def __init__(self, username: str, password_hash: str):
+    def __init__(self, username: str, password: str):
         """Constructs a dummy user.
 
         :param username: The username.
-        :param password_hash: The password hash.
+        :param password: The clear-text password.
         """
         self.username: str = username
-        self.password_hash: str = password_hash
+        self.password_hash: str = make_password_hash(
+            _REALM, username, password)
         self.visits: int = 0
         self.is_authenticated: bool = True
         self.is_active: bool = True
@@ -85,8 +86,7 @@ class FlaskLoginTestCase(TestCase):
         auth: DigestAuth = DigestAuth(realm=_REALM)
         auth.init_app(app)
 
-        self.user: User = User(
-            _USERNAME, make_password_hash(_REALM, _USERNAME, _PASSWORD))
+        self.user: User = User(_USERNAME, _PASSWORD)
         user_db: t.Dict[str, User] = {_USERNAME: self.user}
 
         @auth.register_get_password
