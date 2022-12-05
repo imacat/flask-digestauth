@@ -359,10 +359,13 @@ Writing Tests
 =============
 
 You can write tests with our test client that handles HTTP Digest
-Authentication.  Example for a unittest testcase:
+Authentication.
+
+Example for a unittest_ test case:
 
 ::
 
+    from flask import Flask
     from flask_digest_auth import Client
     from flask_testing import TestCase
     from my_app import create_app
@@ -383,6 +386,41 @@ Authentication.  Example for a unittest testcase:
             response = self.client.get(
                 "/admin", digest_auth=("my_name", "my_pass"))
             self.assertEqual(response.status_code, 200)
+
+
+
+Example for a pytest_ test:
+
+::
+
+    import pytest
+    from flask import Flask
+    from flask_digest_auth import Client
+    from my_app import create_app
+
+    @pytest.fixture()
+    def app():
+        app: Flask = create_app({
+            "SECRET_KEY": token_urlsafe(32),
+            "TESTING": True
+        })
+        app.test_client_class = Client
+        yield app
+
+    @pytest.fixture()
+    def client(app):
+        return app.test_client()
+
+    def test_admin(app: Flask, client: Client):
+        with app.app_context():
+            response = self.client.get("/admin")
+            assert response.status_code == 401
+            response = self.client.get(
+                "/admin", digest_auth=("my_name", "my_pass"))
+            assert response.status_code == 200
+
+.. _unittest: https://docs.python.org/3/library/unittest.html
+.. _pytest: https://pytest.org
 
 
 Copyright
