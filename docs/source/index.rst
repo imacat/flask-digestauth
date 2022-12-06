@@ -26,7 +26,6 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
 
 .. _HTTP Digest Authentication: https://en.wikipedia.org/wiki/Digest_access_authentication
