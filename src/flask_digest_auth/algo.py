@@ -47,15 +47,15 @@ def calc_response(
     :param uri: The request URI.
     :param password_hash: The password hash for the HTTP digest authentication.
     :param nonce: The nonce.
-    :param qop: the quality of protection, either "auth" or "auth-int".
-    :param algorithm: The algorithm, either "MD5" or "MD5-sess".
+    :param qop: the quality of protection, either ``auth`` or ``auth-int``.
+    :param algorithm: The algorithm, either ``MD5`` or ``MD5-sess``.
     :param cnonce: The client nonce, which must exists when qop exists or
-        algorithm="MD5-sess".
+        algorithm is ``MD5-sess``.
     :param nc: The request counter, which must exists when qop exists.
-    :param body: The request body, which must exists when qop="auth-int".
+    :param body: The request body, which must exists when qop is ``auth-int``.
     :return: The response value.
-    :raise AssertionError: When cnonce is missing with the
-        algorithm="MD5-sess", when body is missing with qop="auth-int", or when
+    :raise AssertionError: When cnonce is missing with algorithm is
+        ``MD5-sess``, when body is missing with qop is ``auth-int``, or when
         cnonce or nc is missing with qop exits.
     """
 
@@ -64,7 +64,7 @@ def calc_response(
 
         :return: The first hash.
         :raise AssertionError: When cnonce is missing with
-            algorithm="MD5-sess".
+            algorithm is ``MD5-sess``.
         """
         if algorithm == "MD5-sess":
             assert cnonce is not None,\
@@ -78,7 +78,7 @@ def calc_response(
         """Calculates the second hash.
 
         :return: The second hash.
-        :raise AssertionError: When body is missing with qop="auth-int".
+        :raise AssertionError: When body is missing with qop is ``auth-int``.
         """
         if qop == "auth-int":
             assert body is not None, f"Missing \"body\" with qop=\"{qop}\""

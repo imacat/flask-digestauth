@@ -36,8 +36,8 @@ class Client(WerkzeugClient):
         """Opens a request.
 
         :param args: The arguments.
-        :param digest_auth: The username and password for the HTTP digest
-            authentication.
+        :param digest_auth: A tuple of the username and password for the HTTP
+            digest authentication.
         :param kwargs: The keyword arguments.
         :return: The response.
         """
@@ -59,7 +59,7 @@ class Client(WerkzeugClient):
                            username: str, password: str) -> Authorization:
         """Composes and returns the request authorization.
 
-        :param www_authenticate: The WWW-Authenticate response.
+        :param www_authenticate: The ``WWW-Authenticate`` response.
         :param uri: The request URI.
         :param username: The username.
         :param password: The password.
