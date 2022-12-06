@@ -261,8 +261,8 @@ A pytest Test
 
     def test_admin(app: Flask, client: Client):
         with app.app_context():
-            response = self.client.get("/admin")
+            response = client.get("/admin")
             assert response.status_code == 401
-            response = self.client.get(
+            response = client.get(
                 "/admin", digest_auth=("my_name", "my_pass"))
             assert response.status_code == 200
