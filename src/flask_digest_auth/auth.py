@@ -45,7 +45,7 @@ class DigestAuth:
             = URLSafeTimedSerializer(token_urlsafe(32))
         self.realm: str = "" if realm is None else realm
         """The realm.  Default is an empty string."""
-        self.algorithm: t.Optional[str] = None
+        self.algorithm: t.Optional[t.Literal["MD5", "MD5-sess"]] = None
         """The algorithm, either None, ``MD5``, or ``MD5-sess``.  Default is
         None."""
         self.use_opaque: bool = True
@@ -53,7 +53,8 @@ class DigestAuth:
         self.__domain: t.List[str] = []
         """A list of directories that this username and password applies to.
         Default is empty."""
-        self.__qop: t.List[str] = ["auth", "auth-int"]
+        self.__qop: t.List[t.Literal["auth", "auth-int"]] \
+            = ["auth", "auth-int"]
         """A list of supported quality of protection supported, either
         ``qop``, ``auth-int``, both, or empty.  Default is both."""
         self.app: t.Optional[Flask] = None
