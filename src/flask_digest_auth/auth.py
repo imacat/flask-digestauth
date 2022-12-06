@@ -41,7 +41,7 @@ class DigestAuth:
 
         :param realm: The realm.
         """
-        self.serializer: URLSafeTimedSerializer \
+        self.__serializer: URLSafeTimedSerializer \
             = URLSafeTimedSerializer(token_urlsafe(32))
         self.realm: str = "" if realm is None else realm
         self.algorithm: t.Optional[str] = None
@@ -152,7 +152,7 @@ class DigestAuth:
                 raise UnauthorizedException(
                     "Missing \"opaque\" in the Authorization header")
             try:
-                self.serializer.loads(
+                self.__serializer.loads(
                     authorization.opaque, salt="opaque", max_age=1800)
             except BadData:
                 raise UnauthorizedException("Invalid opaque")
@@ -173,7 +173,7 @@ class DigestAuth:
             state.stale = False
             raise UnauthorizedException("Incorrect response value")
         try:
-            self.serializer.loads(
+            self.__serializer.loads(
                 authorization.nonce,
                 salt="nonce" if authorization.opaque is None
                 else f"nonce-{authorization.opaque}")
@@ -197,10 +197,10 @@ class DigestAuth:
                 return None
             if state.opaque is not None:
                 return state.opaque
-            return self.serializer.dumps(randbits(32), salt="opaque")
+            return self.__serializer.dumps(randbits(32), salt="opaque")
 
         opaque: t.Optional[str] = get_opaque()
-        nonce: str = self.serializer.dumps(
+        nonce: str = self.__serializer.dumps(
             randbits(32),
             salt="nonce" if opaque is None else f"nonce-{opaque}")
 
