@@ -41,9 +41,8 @@ class DigestAuth:
 
         :param realm: The realm.
         """
-        self.secret_key: str = token_urlsafe(32)
         self.serializer: URLSafeTimedSerializer \
-            = URLSafeTimedSerializer(self.secret_key)
+            = URLSafeTimedSerializer(token_urlsafe(32))
         self.realm: str = "" if realm is None else realm
         self.algorithm: t.Optional[str] = None
         self.use_opaque: bool = True
