@@ -43,6 +43,7 @@ class DigestAuth:
         """
         self.__serializer: URLSafeTimedSerializer \
             = URLSafeTimedSerializer(token_urlsafe(32))
+        """The serializer to generate and validate the nonce and opaque."""
         self.realm: str = "" if realm is None else realm
         """The realm.  Default is an empty string."""
         self.algorithm: t.Optional[t.Literal["MD5", "MD5-sess"]] = None
@@ -61,8 +62,11 @@ class DigestAuth:
         """The current Flask application."""
         self.__get_password_hash: BasePasswordHashGetter \
             = BasePasswordHashGetter()
+        """The callback to return the password hash."""
         self.__get_user: BaseUserGetter = BaseUserGetter()
+        """The callback to return the user."""
         self.__on_login: BaseOnLogInCallback = BaseOnLogInCallback()
+        """The callback to run when the user logs in."""
 
     def login_required(self, view) -> t.Callable:
         """The view decorator for HTTP digest authentication.
