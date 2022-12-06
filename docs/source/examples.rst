@@ -2,6 +2,8 @@ Examples
 ========
 
 
+.. _example-alone-simple:
+
 Simple Applications with Flask-Digest-Auth Alone
 ------------------------------------------------
 
@@ -37,6 +39,8 @@ In your ``my_app.py``:
         auth.logout()
         return redirect(request.form.get("next"))
 
+
+.. _example-alone-large:
 
 Larger Applications with ``create_app()`` with Flask-Digest-Auth Alone
 ----------------------------------------------------------------------
@@ -91,6 +95,8 @@ In your ``my_app/views.py``:
         app.register_blueprint(bp)
 
 
+.. _example-flask-login-simple:
+
 Simple Applications with Flask-Login Integration
 ------------------------------------------------
 
@@ -131,6 +137,8 @@ In your ``my_app.py``:
         # Do not call flask_login.logout_user()
         return redirect(request.form.get("next"))
 
+
+.. _example-flask-login-large:
 
 Larger Applications with ``create_app()`` with Flask-Login Integration
 ----------------------------------------------------------------------
@@ -195,6 +203,8 @@ authentication mechanism.  You can change the actual authentication
 mechanism without changing the views.
 
 
+.. _example-unittest:
+
 A unittest Test Case
 --------------------
 
@@ -223,6 +233,8 @@ A unittest Test Case
             self.assertEqual(response.status_code, 200)
 
 
+
+.. _example-pytest:
 
 A pytest Test
 -------------

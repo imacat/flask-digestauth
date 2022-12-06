@@ -10,6 +10,7 @@ Welcome to flask-digest-auth's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   intro
    flask_digest_auth
    examples
 
