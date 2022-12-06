@@ -44,11 +44,20 @@ class DigestAuth:
         self.__serializer: URLSafeTimedSerializer \
             = URLSafeTimedSerializer(token_urlsafe(32))
         self.realm: str = "" if realm is None else realm
+        """The realm.  Default is an empty string."""
         self.algorithm: t.Optional[str] = None
+        """The algorithm, either None, ``MD5``, or ``MD5-sess``.  Default is
+        None."""
         self.use_opaque: bool = True
-        self.domain: t.List[str] = []
-        self.qop: t.List[str] = ["auth", "auth-int"]
+        """Whether to use the opaque.  Default is True."""
+        self.__domain: t.List[str] = []
+        """A list of paths that this username and password applies to.
+        Default is empty."""
+        self.__qop: t.List[str] = ["auth", "auth-int"]
+        """A list of supported quality of protection supported, either
+        ``qop``, ``auth-int``, both, or empty.  Default is both."""
         self.app: t.Optional[Flask] = None
+        """The current Flask application."""
         self.__get_password_hash: BasePasswordHashGetter \
             = BasePasswordHashGetter()
         self.__get_user: BaseUserGetter = BaseUserGetter()
@@ -205,8 +214,8 @@ class DigestAuth:
             salt="nonce" if opaque is None else f"nonce-{opaque}")
 
         header: str = f"Digest realm=\"{self.realm}\""
-        if len(self.domain) > 0:
-            domain_list: str = ",".join(self.domain)
+        if len(self.__domain) > 0:
+            domain_list: str = ",".join(self.__domain)
             header += f", domain=\"{domain_list}\""
         header += f", nonce=\"{nonce}\""
         if opaque is not None:
@@ -215,8 +224,8 @@ class DigestAuth:
             header += f", stale=TRUE" if state.stale else f", stale=FALSE"
         if self.algorithm is not None:
             header += f", algorithm=\"{self.algorithm}\""
-        if len(self.qop) > 0:
-            qop_list: str = ",".join(self.qop)
+        if len(self.__qop) > 0:
+            qop_list: str = ",".join(self.__qop)
             header += f", qop=\"{qop_list}\""
         return header
 
