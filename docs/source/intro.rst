@@ -85,7 +85,25 @@ See :class:`flask_digest_auth.Client`.
 Also see :ref:`example-unittest` and :ref:`example-pytest`.
 
 
+Installation
+------------
+
+You can install Flask-Digest-Auth with ``pip``:
+
+::
+
+    pip install Flask-Digest-Auth
+
+You may also install the latest source from the
+`Flask-Digest-Auth GitHub repository`_.
+
+::
+
+    pip install git+https://github.com/imacat/flask-digest-auth
+
+
 .. _HTTP Digest Authentication: https://en.wikipedia.org/wiki/Digest_access_authentication
 .. _RFC 2617: https://www.rfc-editor.org/rfc/rfc2617
 .. _Flask: https://flask.palletsprojects.com
 .. _Flask-Login: https://flask-login.readthedocs.io
+.. _Flask-Digest-Auth GitHub repository: https://github.com/imacat/flask-digest-auth
