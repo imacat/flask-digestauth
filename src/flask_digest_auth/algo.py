@@ -23,8 +23,6 @@ from __future__ import annotations
 import typing as t
 from hashlib import md5
 
-from flask_digest_auth.exception import UnauthorizedException
-
 
 def make_password_hash(realm: str, username: str, password: str) -> str:
     """Calculates the password hash for the HTTP digest authentication.
@@ -56,31 +54,21 @@ def calc_response(
     :param nc: The request counter, which must exists when qop exists.
     :param body: The request body, which must exists when qop="auth-int".
     :return: The response value.
-    :raise UnauthorizedException: When cnonce is missing with the
+    :raise AssertionError: When cnonce is missing with the
         algorithm="MD5-sess", when body is missing with qop="auth-int", or when
         cnonce or nc is missing with qop exits.
     """
-
-    def validate_required(field: t.Optional[str], error: str) -> None:
-        """Validates a required field.
-
-        :param field: The field that is required.
-        :param error: The error message.
-        :return: None.
-        """
-        if field is None:
-            raise UnauthorizedException(error)
 
     def calc_ha1() -> str:
         """Calculates and returns the first hash.
 
         :return: The first hash.
-        :raise UnauthorizedException: When the cnonce is missing with
+        :raise AssertionError: When cnonce is missing with
             algorithm="MD5-sess".
         """
         if algorithm == "MD5-sess":
-            validate_required(
-                cnonce, f"Missing \"cnonce\" with algorithm=\"{algorithm}\"")
+            assert cnonce is not None,\
+                f"Missing \"cnonce\" with algorithm=\"{algorithm}\""
             return md5(f"{password_hash}:{nonce}:{cnonce}".encode("utf8")) \
                 .hexdigest()
         # algorithm is None or algorithm == "MD5"
@@ -90,11 +78,10 @@ def calc_response(
         """Calculates the second hash.
 
         :return: The second hash.
-        :raise UnauthorizedException: When the body is missing with
-            qop="auth-int".
+        :raise AssertionError: When body is missing with qop="auth-int".
         """
         if qop == "auth-int":
-            validate_required(body, f"Missing \"body\" with qop=\"{qop}\"")
+            assert body is not None, f"Missing \"body\" with qop=\"{qop}\""
             return md5(
                 f"{method}:{uri}:{md5(body).hexdigest()}".encode("utf8")) \
                 .hexdigest()
@@ -104,8 +91,8 @@ def calc_response(
     ha1: str = calc_ha1()
     ha2: str = calc_ha2()
     if qop == "auth" or qop == "auth-int":
-        validate_required(cnonce, f"Missing \"cnonce\" with the qop=\"{qop}\"")
-        validate_required(nc, f"Missing \"nc\" with the qop=\"{qop}\"")
+        assert cnonce is not None, f"Missing \"cnonce\" with the qop=\"{qop}\""
+        assert nc is not None, f"Missing \"nc\" with the qop=\"{qop}\""
         return md5(f"{ha1}:{nonce}:{nc}:{cnonce}:{qop}:{ha2}".encode("utf8"))\
             .hexdigest()
     # qop is None
