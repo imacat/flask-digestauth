@@ -92,7 +92,7 @@ class DigestAuth:
             if authorization.type != "digest":
                 raise UnauthorizedException(
                     "Not an HTTP digest authorization")
-            self.authenticate(state)
+            self.__authenticate(state)
             session["user"] = authorization.username
             return self.__get_user(authorization.username)
 
@@ -121,12 +121,12 @@ class DigestAuth:
                 response: Response = Response()
                 response.status = 401
                 response.headers["WWW-Authenticate"] \
-                    = self.make_response_header(state)
+                    = self.__make_response_header(state)
                 abort(response)
 
         return login_required_view
 
-    def authenticate(self, state: AuthState) -> None:
+    def __authenticate(self, state: AuthState) -> None:
         """Authenticate a user.
 
         :param state: The authorization state.
@@ -171,7 +171,7 @@ class DigestAuth:
             state.stale = True
             raise UnauthorizedException("Invalid nonce")
 
-    def make_response_header(self, state: AuthState) -> str:
+    def __make_response_header(self, state: AuthState) -> str:
         """Composes and returns the ``WWW-Authenticate`` response header.
 
         :param state: The authorization state.
@@ -300,7 +300,7 @@ class DigestAuth:
                 response: Response = Response()
                 response.status = 401
                 response.headers["WWW-Authenticate"] \
-                    = self.make_response_header(g.digest_auth_state)
+                    = self.__make_response_header(g.digest_auth_state)
                 abort(response)
 
             @login_manager.request_loader
@@ -319,7 +319,7 @@ class DigestAuth:
                     if authorization.type != "digest":
                         raise UnauthorizedException(
                             "Not an HTTP digest authorization")
-                    self.authenticate(g.digest_auth_state)
+                    self.__authenticate(g.digest_auth_state)
                     user = login_manager.user_callback(
                         authorization.username)
                     login_user(user)
