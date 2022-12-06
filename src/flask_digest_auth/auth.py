@@ -33,50 +33,6 @@ from werkzeug.datastructures import Authorization
 from flask_digest_auth.algo import calc_response
 
 
-class BasePasswordHashGetter:
-    """The base password hash getter."""
-
-    @staticmethod
-    def __call__(username: str) -> t.Optional[str]:
-        """Returns the password hash of a user.
-
-        :param username: The username.
-        :return: The password hash, or None if the user does not exist.
-        :raise UnboundLocalError: When the password hash getter function is
-            not registered yet.
-        """
-        raise UnboundLocalError("The function to return the password hash"
-                                " was not registered yet.")
-
-
-class BaseUserGetter:
-    """The base user getter."""
-
-    @staticmethod
-    def __call__(username: str) -> t.Optional[t.Any]:
-        """Returns a user.
-
-        :param username: The username.
-        :return: The user, or None if the user does not exist.
-        :raise UnboundLocalError: When the user getter function is not
-            registered yet.
-        """
-        raise UnboundLocalError("The function to return the user"
-                                " was not registered yet.")
-
-
-class BaseOnLogInCallback:
-    """The base callback when the user logs in."""
-
-    @staticmethod
-    def __call__(user: t.Any) -> None:
-        """Runs the callback when the user logs in.
-
-        :param user: The logged-in user.
-        :return: None.
-        """
-
-
 class DigestAuth:
     """The HTTP digest authentication."""
 
@@ -404,3 +360,47 @@ class AuthState:
 class UnauthorizedException(Exception):
     """The exception thrown when the authentication is failed."""
     pass
+
+
+class BasePasswordHashGetter:
+    """The base password hash getter."""
+
+    @staticmethod
+    def __call__(username: str) -> t.Optional[str]:
+        """Returns the password hash of a user.
+
+        :param username: The username.
+        :return: The password hash, or None if the user does not exist.
+        :raise UnboundLocalError: When the password hash getter function is
+            not registered yet.
+        """
+        raise UnboundLocalError("The function to return the password hash"
+                                " was not registered yet.")
+
+
+class BaseUserGetter:
+    """The base user getter."""
+
+    @staticmethod
+    def __call__(username: str) -> t.Optional[t.Any]:
+        """Returns a user.
+
+        :param username: The username.
+        :return: The user, or None if the user does not exist.
+        :raise UnboundLocalError: When the user getter function is not
+            registered yet.
+        """
+        raise UnboundLocalError("The function to return the user"
+                                " was not registered yet.")
+
+
+class BaseOnLogInCallback:
+    """The base callback when the user logs in."""
+
+    @staticmethod
+    def __call__(user: t.Any) -> None:
+        """Runs the callback when the user logs in.
+
+        :param user: The logged-in user.
+        :return: None.
+        """
