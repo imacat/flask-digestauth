@@ -62,6 +62,7 @@ class DigestAuth:
 
         ::
 
+            @app.get("/admin")
             @auth.login_required
             def admin():
                 return f"Hello, {g.user.username}!"
