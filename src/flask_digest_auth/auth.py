@@ -49,9 +49,9 @@ class DigestAuth:
         """The algorithm, either None, ``MD5``, or ``MD5-sess``.  Default is
         None."""
         self.use_opaque: bool = True
-        """Whether to use the opaque.  Default is True."""
+        """Whether to use an opaque.  Default is True."""
         self.__domain: t.List[str] = []
-        """A list of paths that this username and password applies to.
+        """A list of directories that this username and password applies to.
         Default is empty."""
         self.__qop: t.List[str] = ["auth", "auth-int"]
         """A list of supported quality of protection supported, either
