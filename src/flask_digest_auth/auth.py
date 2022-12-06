@@ -31,7 +31,6 @@ from itsdangerous import URLSafeTimedSerializer, BadData
 from werkzeug.datastructures import Authorization
 
 from flask_digest_auth.algo import calc_response
-from flask_digest_auth.exception import UnauthorizedException
 
 
 class BasePasswordHashGetter:
@@ -400,3 +399,8 @@ class AuthState:
         """Constructs the authorization state."""
         self.opaque: t.Optional[str] = None
         self.stale: t.Optional[bool] = None
+
+
+class UnauthorizedException(Exception):
+    """The exception thrown when the authentication is failed."""
+    pass
