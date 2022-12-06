@@ -103,7 +103,7 @@ class DigestAuth:
     def login_required(self, view) -> t.Callable:
         """The view decorator for HTTP digest authentication.
 
-        :param view:
+        :param view: The view.
         :return: The login-protected view.
         """
 
@@ -217,10 +217,10 @@ class DigestAuth:
             raise UnauthorizedException("Invalid nonce")
 
     def make_response_header(self, state: AuthState) -> str:
-        """Composes and returns the WWW-Authenticate response header.
+        """Composes and returns the ``WWW-Authenticate`` response header.
 
         :param state: The authorization state.
-        :return: The WWW-Authenticate response header.
+        :return: The ``WWW-Authenticate`` response header.
         """
 
         def get_opaque() -> t.Optional[str]:

@@ -49,16 +49,16 @@ def calc_response(
     :param uri: The request URI.
     :param password_hash: The password hash for the HTTP digest authentication.
     :param nonce: The nonce.
-    :param qop: the quality of protection.
+    :param qop: the quality of protection, either "auth" or "auth-int".
     :param algorithm: The algorithm, either "MD5" or "MD5-sess".
     :param cnonce: The client nonce, which must exists when qop exists or
         algorithm="MD5-sess".
     :param nc: The request counter, which must exists when qop exists.
     :param body: The request body, which must exists when qop="auth-int".
     :return: The response value.
-    :raise UnauthorizedException: When the cnonce is missing with the MD5-sess
-        algorithm, when the body is missing with the auth-int qop, or when the
-        cnonce or nc is missing with the auth or auth-int qop.
+    :raise UnauthorizedException: When cnonce is missing with the
+        algorithm="MD5-sess", when body is missing with qop="auth-int", or when
+        cnonce or nc is missing with qop exits.
     """
 
     def validate_required(field: t.Optional[str], error: str) -> None:
@@ -75,8 +75,8 @@ def calc_response(
         """Calculates and returns the first hash.
 
         :return: The first hash.
-        :raise UnauthorizedException: When the cnonce is missing with the MD5-sess
-            algorithm.
+        :raise UnauthorizedException: When the cnonce is missing with
+            algorithm="MD5-sess".
         """
         if algorithm == "MD5-sess":
             validate_required(
