@@ -29,7 +29,54 @@ from flask_digest_auth.algo import calc_response, make_password_hash
 
 
 class Client(WerkzeugClient):
-    """The test client with HTTP digest authentication enabled."""
+    """The test client with HTTP digest authentication enabled.
+
+    For unittest example:
+
+    ::
+
+        class MyTestCase(flask_testing.TestCase):
+
+            def create_app(self):
+                app: Flask = create_app({
+                    "SECRET_KEY": token_urlsafe(32),
+                    "TESTING": True
+                })
+                app.test_client_class = Client
+                return app
+
+            def test_admin(self):
+                response = self.client.get("/admin")
+                self.assertEqual(response.status_code, 401)
+                response = self.client.get(
+                    "/admin", digest_auth=("my_name", "my_pass"))
+                self.assertEqual(response.status_code, 200)
+
+    For pytest example:
+
+    ::
+
+        @pytest.fixture()
+        def app():
+            app: Flask = create_app({
+                "SECRET_KEY": token_urlsafe(32),
+                "TESTING": True
+            })
+            app.test_client_class = Client
+            yield app
+
+        @pytest.fixture()
+        def client(app):
+            return app.test_client()
+
+        def test_admin(app: Flask, client: Client):
+            with app.app_context():
+                response = self.client.get("/admin")
+                assert response.status_code == 401
+                response = self.client.get(
+                    "/admin", digest_auth=("my_name", "my_pass"))
+                assert response.status_code == 200
+    """
 
     def open(self, *args, digest_auth: t.Optional[t.Tuple[str, str]] = None,
              **kwargs) -> TestResponse:

@@ -26,6 +26,13 @@ from hashlib import md5
 
 def make_password_hash(realm: str, username: str, password: str) -> str:
     """Calculates the password hash for the HTTP digest authentication.
+    Use this function to set the password for the user.
+
+    For example:
+
+    ::
+
+        user.password = make_password_hash(realm, username, password)
 
     :param realm: The realm.
     :param username: The username.

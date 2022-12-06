@@ -58,6 +58,16 @@ class DigestAuth:
     def login_required(self, view) -> t.Callable:
         """The view decorator for HTTP digest authentication.
 
+        For example:
+
+        ::
+
+            @auth.login_required
+            def admin():
+                return f"Hello, {g.user.username}!"
+
+        The logged-in user can be retrieved at ``g.user``.
+
         :param view: The view.
         :return: The login-protected view.
         """
@@ -212,7 +222,16 @@ class DigestAuth:
 
     def register_get_password(self, func: t.Callable[[str], t.Optional[str]])\
             -> None:
-        """Registers the callback to obtain the password hash.
+        """The decorator to register the callback to obtain the password hash.
+
+        For example:
+
+        ::
+
+            @auth.register_get_password
+            def get_password_hash(username: str) -> Optional[str]:
+                user = User.query.filter(User.username == username).first()
+                return None if user is None else user.password
 
         :param func: The callback that given the username, returns the password
             hash, or None if the user does not exist.
@@ -235,7 +254,15 @@ class DigestAuth:
 
     def register_get_user(self, func: t.Callable[[str], t.Optional[t.Any]])\
             -> None:
-        """Registers the callback to obtain the user.
+        """The decorator to register the callback to obtain the user.
+
+        For example:
+
+        ::
+
+            @auth.register_get_user
+            def get_user(username: str) -> Optional[User]:
+                return User.query.filter(User.username == username).first()
 
         :param func: The callback that given the username, returns the user,
             or None if the user does not exist.
@@ -257,7 +284,15 @@ class DigestAuth:
         self.__get_user = UserGetter()
 
     def register_on_login(self, func: t.Callable[[t.Any], None]) -> None:
-        """Registers the callback when the user logs in.
+        """The decorator to register the callback to run when the user logs in.
+
+        For example:
+
+        ::
+
+            @auth.register_on_login
+            def on_login(user: User) -> None:
+                user.visits = user.visits + 1
 
         :param func: The callback given the logged-in user.
         :return: None.
@@ -279,6 +314,15 @@ class DigestAuth:
 
     def init_app(self, app: Flask) -> None:
         """Initializes the Flask application.
+
+        For example:
+
+        ::
+
+            app: flask = Flask(__name__)
+            auth: DigestAuth = DigestAuth()
+            auth.realm = "My Admin"
+            auth.init_app(app)
 
         :param app: The Flask application.
         :return: None.
@@ -334,6 +378,16 @@ class DigestAuth:
         """Logs out the user.
         This actually causes the next authentication to fail, which forces
         the browser to ask the user for the username and password again.
+
+        For example:
+
+        ::
+
+            @app.post("/logout")
+            @auth.login_required
+            def logout():
+                auth.logout()
+                return redirect(request.form.get("next"))
 
         :return: None.
         """

@@ -12,11 +12,11 @@ HTTP Digest Authentication is specified in `RFC 2617`_.
 Why HTTP Digest Authentication?
 -------------------------------
 
-HTTP Digest Authentication has the advantage that it does not send the
-actual password to the server, which greatly enhances the security.
-It uses the challenge-response authentication scheme.  The client
-returns the response calculated from the challenge and the password,
-but not the original password.
+*HTTP Digest Authentication* has the advantage that it does not send
+the actual password to the server, which greatly enhances the
+security.  It uses the challenge-response authentication scheme.  The
+client returns the response calculated from the challenge and the
+password, but not the original password.
 
 Log in forms has the advantage of freedom, in the senses of both the
 visual design and the actual implementation.  You may implement your
@@ -43,7 +43,7 @@ You may also install the latest source from the
 
 ::
 
-    pip install git+https://github.com/imacat/flask-digest-auth
+    pip install git+https://github.com/imacat/flask-digest-auth.git
 
 
 Setting the Password
