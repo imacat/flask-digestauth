@@ -28,7 +28,7 @@ def make_password_hash(realm: str, username: str, password: str) -> str:
     """Calculates the password hash for the HTTP digest authentication.
     Use this function to set the password for the user.
 
-    For example:
+    :Example:
 
     ::
 
@@ -54,7 +54,7 @@ def calc_response(
     :param uri: The request URI.
     :param password_hash: The password hash for the HTTP digest authentication.
     :param nonce: The nonce.
-    :param qop: the quality of protection, either ``auth`` or ``auth-int``.
+    :param qop: The quality of protection, either ``auth`` or ``auth-int``.
     :param algorithm: The algorithm, either ``MD5`` or ``MD5-sess``.
     :param cnonce: The client nonce, which must exists when qop exists or
         algorithm is ``MD5-sess``.

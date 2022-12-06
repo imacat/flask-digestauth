@@ -66,7 +66,7 @@ class DigestAuth:
     def login_required(self, view) -> t.Callable:
         """The view decorator for HTTP digest authentication.
 
-        For example:
+        :Example:
 
         ::
 
@@ -233,7 +233,7 @@ class DigestAuth:
             -> None:
         """The decorator to register the callback to obtain the password hash.
 
-        For example:
+        :Example:
 
         ::
 
@@ -265,7 +265,7 @@ class DigestAuth:
             -> None:
         """The decorator to register the callback to obtain the user.
 
-        For example:
+        :Example:
 
         ::
 
@@ -295,7 +295,7 @@ class DigestAuth:
     def register_on_login(self, func: t.Callable[[t.Any], None]) -> None:
         """The decorator to register the callback to run when the user logs in.
 
-        For example:
+        :Example:
 
         ::
 
@@ -324,7 +324,7 @@ class DigestAuth:
     def init_app(self, app: Flask) -> None:
         """Initializes the Flask application.
 
-        For example:
+        :Example:
 
         ::
 
@@ -388,7 +388,7 @@ class DigestAuth:
         This actually causes the next authentication to fail, which forces
         the browser to ask the user for the username and password again.
 
-        For example:
+        :Example:
 
         ::
 

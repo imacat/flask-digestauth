@@ -31,7 +31,9 @@ from flask_digest_auth.algo import calc_response, make_password_hash
 class Client(WerkzeugClient):
     """The test client with HTTP digest authentication enabled.
 
-    For unittest example:
+    :Example:
+
+    For unittest_:
 
     ::
 
@@ -52,7 +54,7 @@ class Client(WerkzeugClient):
                     "/admin", digest_auth=("my_name", "my_pass"))
                 self.assertEqual(response.status_code, 200)
 
-    For pytest example:
+    For pytest_:
 
     ::
 
@@ -76,11 +78,18 @@ class Client(WerkzeugClient):
                 response = client.get(
                     "/admin", digest_auth=("my_name", "my_pass"))
                 assert response.status_code == 200
+
+    .. _unittest: https://docs.python.org/3/library/unittest.html
+    .. _pytest: https://pytest.org
     """
 
     def open(self, *args, digest_auth: t.Optional[t.Tuple[str, str]] = None,
              **kwargs) -> TestResponse:
         """Opens a request.
+
+        .. warning::
+            This is to override the parent ``open`` method.  You should call
+            the ``get``, ``post``, ``put``, and ``delete`` methods instead.
 
         :param args: The arguments.
         :param digest_auth: A tuple of the username and password for the HTTP
@@ -105,6 +114,9 @@ class Client(WerkzeugClient):
     def make_authorization(www_authenticate: WWWAuthenticate, uri: str,
                            username: str, password: str) -> Authorization:
         """Composes and returns the request authorization.
+
+        .. warning::
+            This method is not for public.
 
         :param www_authenticate: The ``WWW-Authenticate`` response.
         :param uri: The request URI.
