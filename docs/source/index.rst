@@ -11,6 +11,7 @@ Welcome to flask-digest-auth's documentation!
    :caption: Contents:
 
    flask_digest_auth
+   examples
 
 
 
