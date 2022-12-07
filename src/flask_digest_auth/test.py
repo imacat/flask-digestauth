@@ -87,10 +87,6 @@ class Client(WerkzeugClient):
              **kwargs) -> TestResponse:
         """Opens a request.
 
-        .. warning::
-            This is to override the parent ``open`` method.  You should call
-            the ``get``, ``post``, ``put``, and ``delete`` methods instead.
-
         :param args: The arguments.
         :param digest_auth: A tuple of the username and password for the HTTP
             digest authentication.
@@ -114,9 +110,6 @@ class Client(WerkzeugClient):
     def make_authorization(www_authenticate: WWWAuthenticate, uri: str,
                            username: str, password: str) -> Authorization:
         """Composes and returns the request authorization.
-
-        .. warning::
-            This method is not for public.
 
         :param www_authenticate: The ``WWW-Authenticate`` response.
         :param uri: The request URI.
