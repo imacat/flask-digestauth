@@ -1,5 +1,5 @@
-.. flask-digest-auth documentation master file, created by
-   sphinx-quickstart on Tue Dec  6 15:15:08 2022.
+.. Flask-Digest-Auth documentation master file, created by
+   sphinx-quickstart on Wed Dec  7 09:40:48 2022.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
