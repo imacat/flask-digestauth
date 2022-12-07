@@ -229,7 +229,7 @@ A unittest Test Case
             response = self.client.get("/admin")
             self.assertEqual(response.status_code, 401)
             response = self.client.get(
-                "/admin", digest_auth=("my_name", "my_pass"))
+                "/admin", digest_auth=(USERNAME, PASSWORD))
             self.assertEqual(response.status_code, 200)
 
 
@@ -264,5 +264,5 @@ A pytest Test
             response = client.get("/admin")
             assert response.status_code == 401
             response = client.get(
-                "/admin", digest_auth=("my_name", "my_pass"))
+                "/admin", digest_auth=(USERNAME, PASSWORD))
             assert response.status_code == 200
