@@ -422,11 +422,13 @@ class AuthState:
     def __init__(self):
         """Constructs the authorization state."""
         self.opaque: t.Optional[str] = None
+        """The opaque."""
         self.stale: t.Optional[bool] = None
+        """The stale."""
 
 
 class UnauthorizedException(Exception):
-    """The exception thrown when the authentication is failed."""
+    """The exception thrown when the authorization fails."""
     pass
 
 
