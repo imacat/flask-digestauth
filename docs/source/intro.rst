@@ -63,7 +63,7 @@ The username is part of the hash.  If the user changes their username,
 you need to ask their password, to generate and store the new password
 hash.
 
-See :meth:`flask_digest_auth.make_password_hash`.
+See :func:`flask_digest_auth.algo.make_password_hash`.
 
 
 Flask-Digest-Auth Alone
@@ -118,7 +118,7 @@ logging the log in event, adding the log in counter, etc.
     def on_login(user: User) -> None:
         user.visits = user.visits + 1
 
-See :meth:`flask_digest_auth.DigestAuth.register_on_login`.
+See :meth:`flask_digest_auth.auth.DigestAuth.register_on_login`.
 
 
 Log Out
@@ -127,7 +127,7 @@ Log Out
 Flask-Digest-Auth supports log out.  The user will be prompted for the
 new username and password.
 
-See :meth:`flask_digest_auth.DigestAuth.logout`.
+See :meth:`flask_digest_auth.auth.DigestAuth.logout`.
 
 
 Test Client
@@ -136,7 +136,7 @@ Test Client
 Flask-Digest-Auth comes with a test client that supports HTTP digest
 authentication.
 
-See :class:`flask_digest_auth.Client`.
+See :class:`flask_digest_auth.test.Client`.
 
 Also see :ref:`example-unittest` and :ref:`example-pytest`.
 

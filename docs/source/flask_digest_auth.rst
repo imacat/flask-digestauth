@@ -1,24 +1,37 @@
 flask\_digest\_auth package
 ===========================
 
-The ``DigestAuth`` Class
-------------------------
-.. autoclass:: flask_digest_auth.DigestAuth
-    :members:
-    :undoc-members:
-    :show-inheritance:
+Submodules
+----------
 
-The ``make_password_hash`` Function
------------------------------------
-.. autofunction:: flask_digest_auth.make_password_hash
+flask\_digest\_auth.algo module
+-------------------------------
 
-The ``calc_response`` Function
-------------------------------
-.. autofunction:: flask_digest_auth.calc_response
+.. automodule:: flask_digest_auth.algo
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-The ``Client`` Test Class
--------------------------
-.. autoclass:: flask_digest_auth.Client
-    :members:
-    :undoc-members:
-    :show-inheritance:
+flask\_digest\_auth.auth module
+-------------------------------
+
+.. automodule:: flask_digest_auth.auth
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+flask\_digest\_auth.test module
+-------------------------------
+
+.. automodule:: flask_digest_auth.test
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: flask_digest_auth
+   :members:
+   :undoc-members:
+   :show-inheritance:
