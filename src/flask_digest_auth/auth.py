@@ -70,7 +70,7 @@ class DigestAuth:
         """The callback to run when the user logs in."""
 
     def login_required(self, view) -> t.Callable:
-        """The view decorator for HTTP digest authentication.
+        """The view decorator for the HTTP digest authentication.
 
         :Example:
 
