@@ -88,7 +88,7 @@ class Client(WerkzeugClient):
         """Opens a request.
 
         :param args: The arguments.
-        :param digest_auth: A tuple of the username and password for the HTTP
+        :param digest_auth: The (*username*, *password*) tuple for the HTTP
             digest authentication.
         :param kwargs: The keyword arguments.
         :return: The response.
