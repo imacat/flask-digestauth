@@ -16,8 +16,9 @@
 #  limitations under the License.
 
 """The HTTP Digest Authentication.
-See RFC 2617 HTTP Authentication: Basic and Digest Access Authentication
+See `RFC 2617`_ HTTP Authentication: Basic and Digest Access Authentication
 
+.. _RFC 2617: https://www.rfc-editor.org/rfc/rfc2617
 """
 from __future__ import annotations
 
@@ -417,23 +418,30 @@ class DigestAuth:
 
 
 class AuthState:
-    """The authorization state."""
+    """The authentication state.  It keeps the status in the earlier
+    authentication stage, so that the latter response stage knows how to
+    response.
+    """
 
     def __init__(self):
         """Constructs the authorization state."""
         self.opaque: t.Optional[str] = None
-        """The opaque."""
+        """The opaque value specified by the client, if valid."""
         self.stale: t.Optional[bool] = None
-        """The stale."""
+        """The stale value, if there is a previous log in attempt."""
 
 
 class UnauthorizedException(Exception):
-    """The exception thrown when the authorization fails."""
-    pass
+    """The exception thrown when the authentication fails."""
 
 
 class BasePasswordHashGetter:
-    """The base password hash getter."""
+    """The base callback that given the username, returns the password hash,
+    or None if the user does not exist.  The default is to raise an
+    :class:`UnboundLocalError` if the callback is not registered yet.
+
+    See :meth:`flask_digest_auth.auth.DigestAuth.register_get_password`
+    """
 
     @staticmethod
     def __call__(username: str) -> t.Optional[str]:
@@ -449,7 +457,12 @@ class BasePasswordHashGetter:
 
 
 class BaseUserGetter:
-    """The base user getter."""
+    """The base callback that given the username, returns the user, or None if
+    the user does not exist.  The default is to raise an
+    :class:`UnboundLocalError` if the callback is not registered yet.
+
+    See :meth:`flask_digest_auth.auth.DigestAuth.register_get_user`
+    """
 
     @staticmethod
     def __call__(username: str) -> t.Optional[t.Any]:
@@ -465,7 +478,11 @@ class BaseUserGetter:
 
 
 class BaseOnLogInCallback:
-    """The base callback when the user logs in."""
+    """The base callback to run when the user logs in, given the logged-in
+    user.  The default does nothing.
+
+    See :meth:`flask_digest_auth.auth.DigestAuth.register_on_login`
+    """
 
     @staticmethod
     def __call__(user: t.Any) -> None:
