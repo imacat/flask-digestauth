@@ -45,7 +45,6 @@ class User:
         self.password_hash: str = make_password_hash(
             _REALM, username, password)
         self.visits: int = 0
-        self.is_authenticated: bool = True
         self.is_active: bool = True
         self.is_anonymous: bool = False
 
@@ -56,6 +55,16 @@ class User:
         :return: The username.
         """
         return self.username
+
+    @property
+    def is_authenticated(self) -> bool:
+        """Returns whether the user is authenticated.
+        This is required by Flask-Login.
+        This should return self.is_active.
+
+        :return: True if the user is active, or False otherwise.
+        """
+        return self.is_active
 
 
 class FlaskLoginTestCase(TestCase):
@@ -256,3 +265,34 @@ class FlaskLoginTestCase(TestCase):
         response = self.client.get(admin_uri)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.user.visits, 2)
+
+    def test_disabled(self) -> None:
+        """Tests the disabled user.
+
+        :return: None.
+        """
+        if not self.has_flask_login:
+            self.skipTest("Skipped without Flask-Login.")
+
+        response: Response
+
+        self.user.is_active = False
+        response = self.client.get(self.app.url_for("admin-1"))
+        self.assertEqual(response.status_code, 401)
+        response = self.client.get(self.app.url_for("admin-1"),
+                                   digest_auth=(_USERNAME, _PASSWORD))
+        self.assertEqual(response.status_code, 401)
+
+        self.user.is_active = True
+        response = self.client.get(self.app.url_for("admin-1"),
+                                   digest_auth=(_USERNAME, _PASSWORD))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(self.app.url_for("admin-1"))
+        self.assertEqual(response.status_code, 200)
+
+        self.user.is_active = False
+        response = self.client.get(self.app.url_for("admin-1"))
+        self.assertEqual(response.status_code, 401)
+        response = self.client.get(self.app.url_for("admin-1"),
+                                   digest_auth=(_USERNAME, _PASSWORD))
+        self.assertEqual(response.status_code, 401)
