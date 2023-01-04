@@ -10,8 +10,8 @@ sys.path.insert(0, os.path.abspath('../../src/'))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'Flask-Digest-Auth'
-copyright = '2022, imacat'
+project = 'Flask-DigestAuth'
+copyright = '2022-2023, imacat'
 author = 'imacat'
 release = '0.3.1'
 

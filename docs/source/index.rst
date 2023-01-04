@@ -1,12 +1,12 @@
-.. Flask-Digest-Auth documentation master file, created by
+.. Flask-DigestAuth documentation master file, created by
    sphinx-quickstart on Wed Dec  7 09:40:48 2022.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Flask-Digest-Auth's documentation!
-=============================================
+Welcome to Flask-DigestAuth's documentation!
+============================================
 
-*Flask-Digest-Auth* is an `HTTP Digest Authentication`_ implementation
+*Flask-DigestAuth* is an `HTTP Digest Authentication`_ implementation
 for Flask_ applications.  It authenticates the user for the protected
 views.
 

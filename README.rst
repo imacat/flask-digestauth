@@ -6,13 +6,13 @@ Flask HTTP Digest Authentication
 Description
 ===========
 
-*Flask-Digest-Auth* is an `HTTP Digest Authentication`_ implementation
+*Flask-DigestAuth* is an `HTTP Digest Authentication`_ implementation
 for Flask_ applications.  It authenticates the user for the protected
 views.
 
 HTTP Digest Authentication is specified in `RFC 2617`_.
 
-Refer to the full `Flask-Digest-Auth readthedocs documentation`_.
+Refer to the full `Flask-DigestAuth readthedocs documentation`_.
 
 
 Why HTTP Digest Authentication?
@@ -30,7 +30,7 @@ own challenge-response log in form, but then you are reinventing the
 wheels.  If a pretty log in form is not critical to your project, HTTP
 Digest Authentication should be a good choice.
 
-Flask-Digest-Auth works with Flask-Login_.  Log in protection can be
+Flask-DigestAuth works with Flask-Login_.  Log in protection can be
 separated with the authentication mechanism.  You can create protected
 Flask modules without knowing the actual authentication mechanisms.
 
@@ -38,18 +38,18 @@ Flask modules without knowing the actual authentication mechanisms.
 Installation
 ============
 
-You can install Flask-Digest-Auth with ``pip``:
+You can install Flask-DigestAuth with ``pip``:
 
 ::
 
-    pip install Flask-Digest-Auth
+    pip install Flask-DigestAuth
 
 You may also install the latest source from the
-`Flask-Digest-Auth GitHub repository`_.
+`Flask-DigestAuth GitHub repository`_.
 
 ::
 
-    pip install git+https://github.com/imacat/flask-digest-auth.git
+    pip install git+https://github.com/imacat/flask-digestauth.git
 
 
 Setting the Password
@@ -70,14 +70,14 @@ you need to ask their password, to generate and store the new password
 hash.
 
 
-Flask-Digest-Auth Alone
-=======================
+Flask-DigestAuth Alone
+======================
 
-Flask-Digest-Auth can authenticate the users alone.
+Flask-DigestAuth can authenticate the users alone.
 
 
-Simple Applications with Flask-Digest-Auth Alone
-------------------------------------------------
+Simple Applications with Flask-DigestAuth Alone
+-----------------------------------------------
 
 In your ``my_app.py``:
 
@@ -112,8 +112,8 @@ In your ``my_app.py``:
         return redirect(request.form.get("next"))
 
 
-Larger Applications with ``create_app()`` with Flask-Digest-Auth Alone
-----------------------------------------------------------------------
+Larger Applications with ``create_app()`` with Flask-DigestAuth Alone
+---------------------------------------------------------------------
 
 In your ``my_app/__init__.py``:
 
@@ -169,19 +169,19 @@ In your ``my_app/views.py``:
 Flask-Login Integration
 =======================
 
-Flask-Digest-Auth works with Flask-Login_.  You can write a Flask
+Flask-DigestAuth works with Flask-Login_.  You can write a Flask
 module that requires log in, without specifying how to log in.  The
 application can use either HTTP Digest Authentication, or the log in
 forms, as needed.
 
-To use Flask-Login with Flask-Digest-Auth,
+To use Flask-Login with Flask-DigestAuth,
 ``login_manager.init_app(app)`` must be called before
 ``auth.init_app(app)``.
 
 The currently logged-in user can be retrieved at
 ``flask_login.current_user``, if any.
 
-The views only depend on Flask-Login, but not the Flask-Digest-Auth.
+The views only depend on Flask-Login, but not the Flask-DigestAuth.
 You can change the actual authentication mechanism without changing
 the views.
 
@@ -293,7 +293,7 @@ mechanism without changing the views.
 Session Integration
 ===================
 
-Flask-Digest-Auth features session integration.  The user log in
+Flask-DigestAuth features session integration.  The user log in
 is remembered in the session.  The authentication information is not
 requested again.  This is different to the practice of the HTTP Digest
 Authentication, but is convenient for the log in accounting.
@@ -315,14 +315,14 @@ logging the log in event, adding the log in counter, etc.
 Log Out
 =======
 
-Flask-Digest-Auth supports log out.  The user will be prompted for the
+Flask-DigestAuth supports log out.  The user will be prompted for the
 new username and password.
 
 
 Test Client
 ===========
 
-Flask-Digest-Auth comes with a test client that supports HTTP digest
+Flask-DigestAuth comes with a test client that supports HTTP digest
 authentication.
 
 
@@ -389,7 +389,7 @@ A pytest Test
 Copyright
 =========
 
- Copyright (c) 2022 imacat.
+ Copyright (c) 2022-2023 imacat.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -414,6 +414,6 @@ Authors
 .. _HTTP Digest Authentication: https://en.wikipedia.org/wiki/Digest_access_authentication
 .. _RFC 2617: https://www.rfc-editor.org/rfc/rfc2617
 .. _Flask: https://flask.palletsprojects.com
-.. _Flask-Digest-Auth GitHub repository: https://github.com/imacat/flask-digest-auth
-.. _Flask-Digest-Auth readthedocs documentation: https://flask-digest-auth.readthedocs.io
+.. _Flask-DigestAuth GitHub repository: https://github.com/imacat/flask-digestauth
+.. _Flask-DigestAuth readthedocs documentation: https://flask-digestauth.readthedocs.io
 .. _Flask-Login: https://flask-login.readthedocs.io

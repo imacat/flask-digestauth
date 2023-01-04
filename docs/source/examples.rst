@@ -4,8 +4,8 @@ Examples
 
 .. _example-alone-simple:
 
-Simple Applications with Flask-Digest-Auth Alone
-------------------------------------------------
+Simple Applications with Flask-DigestAuth Alone
+-----------------------------------------------
 
 In your ``my_app.py``:
 
@@ -42,8 +42,8 @@ In your ``my_app.py``:
 
 .. _example-alone-large:
 
-Larger Applications with ``create_app()`` with Flask-Digest-Auth Alone
-----------------------------------------------------------------------
+Larger Applications with ``create_app()`` with Flask-DigestAuth Alone
+---------------------------------------------------------------------
 
 In your ``my_app/__init__.py``:
 
