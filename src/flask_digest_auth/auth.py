@@ -327,7 +327,8 @@ class DigestAuth:
         self.__on_login = OnLogInCallback()
 
     def init_app(self, app: Flask) -> None:
-        """Initializes the Flask application.
+        """Initializes the Flask application.  The DigestAuth instance will
+        be stored in ``app.extensions["digest_auth"]``.
 
         :Example:
 
@@ -341,7 +342,7 @@ class DigestAuth:
         :param app: The Flask application.
         :return: None.
         """
-        app.digest_auth = self
+        app.extensions["digest_auth"] = self
 
         if hasattr(app, "login_manager"):
             from flask_login import LoginManager, login_user
