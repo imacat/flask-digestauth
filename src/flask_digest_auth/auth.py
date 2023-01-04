@@ -355,8 +355,8 @@ class DigestAuth:
 
                 :return: None.
                 """
-                state: AuthState = request.digest_auth_state \
-                    if hasattr(request, "digest_auth_state") \
+                state: AuthState = getattr(request, "_digest_auth_state") \
+                    if hasattr(request, "_digest_auth_state") \
                     else AuthState()
                 response: Response = Response()
                 response.status = 401
@@ -372,7 +372,7 @@ class DigestAuth:
                 :return: The authenticated user, or None if the
                     authentication fails
                 """
-                request.digest_auth_state = AuthState()
+                request._digest_auth_state = AuthState()
                 authorization: Authorization = req.authorization
                 try:
                     if authorization is None:
@@ -380,7 +380,7 @@ class DigestAuth:
                     if authorization.type != "digest":
                         raise UnauthorizedException(
                             "Not an HTTP digest authorization")
-                    self.__authenticate(request.digest_auth_state)
+                    self.__authenticate(request._digest_auth_state)
                     user = login_manager.user_callback(
                         authorization.username)
                     login_user(user)
