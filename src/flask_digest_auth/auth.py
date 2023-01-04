@@ -27,7 +27,8 @@ import typing as t
 from functools import wraps
 from secrets import token_urlsafe, randbits
 
-from flask import g, request, Response, session, abort, Flask, Request
+from flask import g, request, Response, session, abort, Flask, Request, \
+    current_app
 from itsdangerous import URLSafeTimedSerializer, BadData
 from werkzeug.datastructures import Authorization
 
@@ -59,8 +60,6 @@ class DigestAuth:
             = ["auth", "auth-int"]
         """A list of supported quality of protection supported, either
         ``qop``, ``auth-int``, both, or empty.  Default is both."""
-        self.app: t.Optional[Flask] = None
-        """The current Flask application."""
         self.__get_password_hash: BasePasswordHashGetter \
             = BasePasswordHashGetter()
         """The callback to return the password hash."""
@@ -343,7 +342,6 @@ class DigestAuth:
         :return: None.
         """
         app.digest_auth = self
-        self.app = app
 
         if hasattr(app, "login_manager"):
             from flask_login import LoginManager, login_user
@@ -412,7 +410,7 @@ class DigestAuth:
         if "user" in session:
             del session["user"]
         try:
-            if hasattr(self.app, "login_manager"):
+            if hasattr(current_app, "login_manager"):
                 from flask_login import logout_user
                 logout_user()
         except ModuleNotFoundError:
