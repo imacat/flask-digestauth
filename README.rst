@@ -52,6 +52,13 @@ You may also install the latest source from the
     pip install git+https://github.com/imacat/flask-digestauth.git
 
 
+Configuration
+=============
+
+Flask-DigestAuth takes the configuration ``DIGEST_AUTH_REALM`` as the
+realm.  The default realm is ``Login Required``.
+
+
 Setting the Password
 ====================
 
@@ -89,7 +96,7 @@ In your ``my_app.py``:
     app: flask = Flask(__name__)
     ... (Configure the Flask application) ...
 
-    auth: DigestAuth = DigestAuth(realm="Admin")
+    auth: DigestAuth = DigestAuth()
     auth.init_app(app)
 
     @auth.register_get_password
@@ -128,7 +135,6 @@ In your ``my_app/__init__.py``:
         app: flask = Flask(__name__)
         ... (Configure the Flask application) ...
 
-        auth.realm = app.config["REALM"]
         auth.init_app(app)
 
         @auth.register_get_password
@@ -207,7 +213,7 @@ In your ``my_app.py``:
     def load_user(user_id: str) -> t.Optional[User]:
         ... (Load the user with the username) ...
 
-    auth: DigestAuth = DigestAuth(realm="Admin")
+    auth: DigestAuth = DigestAuth()
     auth.init_app(app)
 
     @auth.register_get_password
@@ -251,7 +257,6 @@ In your ``my_app/__init__.py``:
         def load_user(user_id: str) -> t.Optional[User]:
             ... (Load the user with the username) ...
 
-        auth.realm = app.config["REALM"]
         auth.init_app(app)
 
         @auth.register_get_password
@@ -340,8 +345,9 @@ A unittest Test Case
 
         def create_app(self):
             app: Flask = create_app({
+                "TESTING": True,
                 "SECRET_KEY": token_urlsafe(32),
-                "TESTING": True
+                "DIGEST_AUTH_REALM": "admin",
             })
             app.test_client_class = Client
             return app
@@ -367,8 +373,9 @@ A pytest Test
     @pytest.fixture()
     def app():
         app: Flask = create_app({
+            "TESTING": True,
             "SECRET_KEY": token_urlsafe(32),
-            "TESTING": True
+            "DIGEST_AUTH_REALM": "admin",
         })
         app.test_client_class = Client
         yield app

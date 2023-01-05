@@ -1,7 +1,7 @@
 # The Flask HTTP Digest Authentication Project.
 # Author: imacat@mail.imacat.idv.tw (imacat), 2022/11/23
 
-#  Copyright (c) 2022 imacat.
+#  Copyright (c) 2022-2023 imacat.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -79,6 +79,7 @@ class FlaskLoginTestCase(TestCase):
         app.config.from_mapping({
             "TESTING": True,
             "SECRET_KEY": token_urlsafe(32),
+            "DIGEST_AUTH_REALM": _REALM,
         })
         app.test_client_class = Client
 
@@ -92,7 +93,7 @@ class FlaskLoginTestCase(TestCase):
         login_manager: flask_login.LoginManager = flask_login.LoginManager()
         login_manager.init_app(app)
 
-        auth: DigestAuth = DigestAuth(realm=_REALM)
+        auth: DigestAuth = DigestAuth()
         auth.init_app(app)
 
         self.user: User = User(_USERNAME, _PASSWORD)

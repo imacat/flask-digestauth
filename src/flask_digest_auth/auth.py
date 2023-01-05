@@ -46,8 +46,8 @@ class DigestAuth:
         self.__serializer: URLSafeTimedSerializer \
             = URLSafeTimedSerializer(token_urlsafe(32))
         """The serializer to generate and validate the nonce and opaque."""
-        self.realm: str = "" if realm is None else realm
-        """The realm.  Default is an empty string."""
+        self.realm: str = "Login Required" if realm is None else realm
+        """The realm.  Default is "Login Required"."""
         self.algorithm: t.Optional[t.Literal["MD5", "MD5-sess"]] = None
         """The algorithm, either None, ``MD5``, or ``MD5-sess``.  Default is
         None."""
@@ -343,6 +343,8 @@ class DigestAuth:
         :return: None.
         """
         app.extensions["digest_auth"] = self
+        if "DIGEST_AUTH_REALM" in app.config:
+            self.realm = app.config["DIGEST_AUTH_REALM"]
 
         if hasattr(app, "login_manager"):
             from flask_login import LoginManager, login_user

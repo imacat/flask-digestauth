@@ -46,6 +46,13 @@ You may also install the latest source from the
     pip install git+https://github.com/imacat/flask-digestauth.git
 
 
+Configuration
+-------------
+
+Flask-DigestAuth takes the configuration ``DIGEST_AUTH_REALM`` as the
+realm.  The default realm is ``Login Required``.
+
+
 Setting the Password
 --------------------
 
