@@ -77,8 +77,8 @@ class FlaskLoginTestCase(TestCase):
         """
         app: Flask = Flask(__name__)
         app.config.from_mapping({
+            "TESTING": True,
             "SECRET_KEY": token_urlsafe(32),
-            "TESTING": True
         })
         app.test_client_class = Client
 
