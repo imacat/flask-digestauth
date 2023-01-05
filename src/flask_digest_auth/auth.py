@@ -381,8 +381,7 @@ class DigestAuth:
                         raise UnauthorizedException(
                             "Not an HTTP digest authorization")
                     self.__authenticate(request._digest_auth_state)
-                    user = login_manager.user_callback(
-                        authorization.username)
+                    user = login_manager.user_callback(authorization.username)
                     login_user(user)
                     self.__on_login(user)
                     return user
