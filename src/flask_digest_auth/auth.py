@@ -336,7 +336,6 @@ class DigestAuth:
 
             app: flask = Flask(__name__)
             auth: DigestAuth = DigestAuth()
-            auth.realm = "My Admin"
             auth.init_app(app)
 
         :param app: The Flask application.
