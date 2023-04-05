@@ -15,8 +15,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-include docs/*
-include docs/source/*
-include docs/source/_static/*
-include docs/source/_templates/*
-include tests/*
+recursive-include docs *
+recursive-exclude docs/build *
+recursive-include tests *
+recursive-exclude tests *.pyc
