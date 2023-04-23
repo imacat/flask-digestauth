@@ -19,6 +19,7 @@ HTTP Digest Authentication is specified in `RFC 2617`_.
    intro
    flask_digest_auth
    examples
+   changelog
 
 
 

@@ -45,6 +45,7 @@ test = [
 
 [project.urls]
 "Documentation" = "https://flask-digestauth.readthedocs.io"
+"Change Log" = "https://mia-accounting.readthedocs.io/en/latest/changelog.html"
 "Repository" = "https://github.com/imacat/flask-digestauth"
 "Bug Tracker" = "https://github.com/imacat/flask-digestauth/issues"
 
