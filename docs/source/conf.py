@@ -6,6 +6,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath('../../src/'))
+import flask_digest_auth
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -13,7 +14,7 @@ sys.path.insert(0, os.path.abspath('../../src/'))
 project = 'Flask-DigestAuth'
 copyright = '2022-2023, imacat'
 author = 'imacat'
-release = '0.5.0'
+release = flask_digest_auth.VERSION
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
