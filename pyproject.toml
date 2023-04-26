@@ -20,7 +20,7 @@ name = "Flask-DigestAuth"
 dynamic = ["version"]
 description = "The Flask HTTP Digest Authentication project."
 readme = "README.rst"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 authors = [
     {name = "imacat", email = "imacat@mail.imacat.idv.tw"},
 ]
