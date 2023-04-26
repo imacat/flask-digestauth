@@ -2,6 +2,17 @@ Change Log
 ==========
 
 
+Version 0.6.0
+-------------
+
+Released 2023/4/26
+
+* Updated the minimal Python version to 3.8.
+* Switched from ``setup.cfg`` to ``pyproject.toml``.
+* Added the change log.
+* Simplified ``README.rst``.
+
+
 Version 0.5.0
 -------------
 
