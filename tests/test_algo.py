@@ -18,8 +18,8 @@
 """The test case for the HTTP digest authentication algorithm.
 
 """
-import typing as t
 import unittest
+from typing import Optional, Literal
 
 from flask_digest_auth import make_password_hash, calc_response
 
@@ -39,11 +39,11 @@ class AlgorithmTestCase(unittest.TestCase):
         method: str = "GET"
         uri: str = "/dir/index.html"
         nonce: str = "dcd98b7102dd2f0e8b11d0f600bfb0c093"
-        qop: t.Optional[t.Literal["auth", "auth-int"]] = "auth"
-        algorithm: t.Optional[t.Literal["MD5", "MD5-sess"]] = None
-        cnonce: t.Optional[str] = "0a4f113b"
-        nc: t.Optional[str] = "00000001"
-        body: t.Optional[bytes] = None
+        qop: Optional[Literal["auth", "auth-int"]] = "auth"
+        algorithm: Optional[Literal["MD5", "MD5-sess"]] = None
+        cnonce: Optional[str] = "0a4f113b"
+        nc: Optional[str] = "00000001"
+        body: Optional[bytes] = None
 
         password_hash: str = make_password_hash(realm, username, password)
         response: str = calc_response(method, uri, password_hash, nonce, qop,

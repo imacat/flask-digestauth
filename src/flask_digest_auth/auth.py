@@ -23,9 +23,9 @@ See `RFC 2617`_ HTTP Authentication: Basic and Digest Access Authentication
 from __future__ import annotations
 
 import sys
-import typing as t
 from functools import wraps
 from secrets import token_urlsafe, randbits
+from typing import Any, Optional, Literal, Callable, List
 
 from flask import g, request, Response, session, abort, Flask, Request, \
     current_app
@@ -38,7 +38,7 @@ from flask_digest_auth.algo import calc_response
 class DigestAuth:
     """The HTTP digest authentication."""
 
-    def __init__(self, realm: t.Optional[str] = None):
+    def __init__(self, realm: Optional[str] = None):
         """Constructs the HTTP digest authentication.
 
         :param realm: The realm.
@@ -48,16 +48,15 @@ class DigestAuth:
         """The serializer to generate and validate the nonce and opaque."""
         self.realm: str = "Login Required" if realm is None else realm
         """The realm.  Default is "Login Required"."""
-        self.algorithm: t.Optional[t.Literal["MD5", "MD5-sess"]] = None
+        self.algorithm: Optional[Literal["MD5", "MD5-sess"]] = None
         """The algorithm, either None, ``MD5``, or ``MD5-sess``.  Default is
         None."""
         self.use_opaque: bool = True
         """Whether to use an opaque.  Default is True."""
-        self.__domain: t.List[str] = []
+        self.__domain: List[str] = []
         """A list of directories that this username and password applies to.
         Default is empty."""
-        self.__qop: t.List[t.Literal["auth", "auth-int"]] \
-            = ["auth", "auth-int"]
+        self.__qop: List[Literal["auth", "auth-int"]] = ["auth", "auth-int"]
         """A list of supported quality of protection supported, either
         ``qop``, ``auth-int``, both, or empty.  Default is both."""
         self.__get_password_hash: BasePasswordHashGetter \
@@ -68,7 +67,7 @@ class DigestAuth:
         self.__on_login: BaseOnLogInCallback = BaseOnLogInCallback()
         """The callback to run when the user logs in."""
 
-    def login_required(self, view) -> t.Callable:
+    def login_required(self, view) -> Callable:
         """The view decorator for the HTTP digest authentication.
 
         :Example:
@@ -89,7 +88,7 @@ class DigestAuth:
         class NoLogInException(Exception):
             """The exception thrown when the user is not authorized."""
 
-        def get_logged_in_user() -> t.Any:
+        def get_logged_in_user() -> Any:
             """Returns the currently logged-in user.
 
             :return: The currently logged-in user.
@@ -97,13 +96,13 @@ class DigestAuth:
             """
             if "user" not in session:
                 raise NoLogInException
-            user: t.Optional[t.Any] = self.__get_user(session["user"])
+            user: Optional[Any] = self.__get_user(session["user"])
             if user is None:
                 del session["user"]
                 raise NoLogInException
             return user
 
-        def auth_user(state: AuthState) -> t.Any:
+        def auth_user(state: AuthState) -> Any:
             """Authenticates a user.
 
             :param state: The authentication state.
@@ -121,7 +120,7 @@ class DigestAuth:
             return self.__get_user(authorization.username)
 
         @wraps(view)
-        def login_required_view(*args, **kwargs) -> t.Any:
+        def login_required_view(*args, **kwargs) -> Any:
             """The login-protected view.
 
             :param args: The positional arguments of the view.
@@ -171,7 +170,7 @@ class DigestAuth:
             except BadData:
                 raise UnauthorizedException("Invalid opaque")
             state.opaque = authorization.opaque
-        password_hash: t.Optional[str] \
+        password_hash: Optional[str] \
             = self.__get_password_hash(authorization.username)
         if password_hash is None:
             raise UnauthorizedException(
@@ -202,7 +201,7 @@ class DigestAuth:
         :return: The ``WWW-Authenticate`` response header.
         """
 
-        def get_opaque() -> t.Optional[str]:
+        def get_opaque() -> Optional[str]:
             """Returns the opaque value.
 
             :return: The opaque value.
@@ -213,7 +212,7 @@ class DigestAuth:
                 return state.opaque
             return self.__serializer.dumps(randbits(32), salt="opaque")
 
-        opaque: t.Optional[str] = get_opaque()
+        opaque: Optional[str] = get_opaque()
         nonce: str = self.__serializer.dumps(
             randbits(32),
             salt="nonce" if opaque is None else f"nonce-{opaque}")
@@ -234,7 +233,7 @@ class DigestAuth:
             header += f", qop=\"{qop_list}\""
         return header
 
-    def register_get_password(self, func: t.Callable[[str], t.Optional[str]])\
+    def register_get_password(self, func: Callable[[str], Optional[str]]) \
             -> None:
         """The decorator to register the callback to obtain the password hash.
 
@@ -256,7 +255,7 @@ class DigestAuth:
             """The base password hash getter."""
 
             @staticmethod
-            def __call__(username: str) -> t.Optional[str]:
+            def __call__(username: str) -> Optional[str]:
                 """Returns the password hash of a user.
 
                 :param username: The username.
@@ -266,8 +265,7 @@ class DigestAuth:
 
         self.__get_password_hash = PasswordHashGetter()
 
-    def register_get_user(self, func: t.Callable[[str], t.Optional[t.Any]])\
-            -> None:
+    def register_get_user(self, func: Callable[[str], Optional[Any]]) -> None:
         """The decorator to register the callback to obtain the user.
 
         :Example:
@@ -287,7 +285,7 @@ class DigestAuth:
             """The user getter."""
 
             @staticmethod
-            def __call__(username: str) -> t.Optional[t.Any]:
+            def __call__(username: str) -> Optional[Any]:
                 """Returns a user.
 
                 :param username: The username.
@@ -297,7 +295,7 @@ class DigestAuth:
 
         self.__get_user = UserGetter()
 
-    def register_on_login(self, func: t.Callable[[t.Any], None]) -> None:
+    def register_on_login(self, func: Callable[[Any], None]) -> None:
         """The decorator to register the callback to run when the user logs in.
 
         :Example:
@@ -316,7 +314,7 @@ class DigestAuth:
             """The callback when the user logs in."""
 
             @staticmethod
-            def __call__(user: t.Any) -> None:
+            def __call__(user: Any) -> None:
                 """Runs the callback when the user logs in.
 
                 :param user: The logged-in user.
@@ -366,7 +364,7 @@ class DigestAuth:
                 abort(response)
 
             @login_manager.request_loader
-            def load_user_from_request(req: Request) -> t.Optional[t.Any]:
+            def load_user_from_request(req: Request) -> Optional[Any]:
                 """Loads the user from the request header.
 
                 :param req: The request.
@@ -427,9 +425,9 @@ class AuthState:
 
     def __init__(self):
         """Constructs the authorization state."""
-        self.opaque: t.Optional[str] = None
+        self.opaque: Optional[str] = None
         """The opaque value specified by the client, if valid."""
-        self.stale: t.Optional[bool] = None
+        self.stale: Optional[bool] = None
         """The stale value, if there is a previous log in attempt."""
 
 
@@ -446,7 +444,7 @@ class BasePasswordHashGetter:
     """
 
     @staticmethod
-    def __call__(username: str) -> t.Optional[str]:
+    def __call__(username: str) -> Optional[str]:
         """Returns the password hash of a user.
 
         :param username: The username.
@@ -467,7 +465,7 @@ class BaseUserGetter:
     """
 
     @staticmethod
-    def __call__(username: str) -> t.Optional[t.Any]:
+    def __call__(username: str) -> Optional[Any]:
         """Returns a user.
 
         :param username: The username.
@@ -487,7 +485,7 @@ class BaseOnLogInCallback:
     """
 
     @staticmethod
-    def __call__(user: t.Any) -> None:
+    def __call__(user: Any) -> None:
         """Runs the callback when the user logs in.
 
         :param user: The logged-in user.

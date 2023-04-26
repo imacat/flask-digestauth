@@ -18,8 +18,8 @@
 """The test case for the Flask-Login integration.
 
 """
-import typing as t
 from secrets import token_urlsafe
+from typing import Optional, Dict
 
 from flask import Response, Flask, g, redirect, request
 from flask_testing import TestCase
@@ -97,10 +97,10 @@ class FlaskLoginTestCase(TestCase):
         auth.init_app(app)
 
         self.user: User = User(_USERNAME, _PASSWORD)
-        user_db: t.Dict[str, User] = {_USERNAME: self.user}
+        user_db: Dict[str, User] = {_USERNAME: self.user}
 
         @auth.register_get_password
-        def get_password_hash(username: str) -> t.Optional[str]:
+        def get_password_hash(username: str) -> Optional[str]:
             """Returns the password hash of a user.
 
             :param username: The username.
@@ -119,7 +119,7 @@ class FlaskLoginTestCase(TestCase):
             user.visits = user.visits + 1
 
         @login_manager.user_loader
-        def load_user(user_id: str) -> t.Optional[User]:
+        def load_user(user_id: str) -> Optional[User]:
             """Loads a user.
 
             :param user_id: The username.

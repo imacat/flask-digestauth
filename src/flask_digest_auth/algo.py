@@ -20,8 +20,8 @@
 """
 from __future__ import annotations
 
-import typing as t
 from hashlib import md5
+from typing import Optional, Literal
 
 
 def make_password_hash(realm: str, username: str, password: str) -> str:
@@ -44,10 +44,10 @@ def make_password_hash(realm: str, username: str, password: str) -> str:
 
 def calc_response(
         method: str, uri: str, password_hash: str,
-        nonce: str, qop: t.Optional[t.Literal["auth", "auth-int"]] = None,
-        algorithm: t.Optional[t.Literal["MD5", "MD5-sess"]] = "MD5-sess",
-        cnonce: t.Optional[str] = None, nc: t.Optional[str] = None,
-        body: t.Optional[bytes] = None) -> str:
+        nonce: str, qop: Optional[Literal["auth", "auth-int"]] = None,
+        algorithm: Optional[Literal["MD5", "MD5-sess"]] = "MD5-sess",
+        cnonce: Optional[str] = None, nc: Optional[str] = None,
+        body: Optional[bytes] = None) -> str:
     """Calculates the response value of the HTTP digest authentication.
 
     :param method: The request method.

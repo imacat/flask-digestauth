@@ -18,8 +18,8 @@
 """The test case for the HTTP digest authentication.
 
 """
-import typing as t
 from secrets import token_urlsafe
+from typing import Any, Optional, Dict
 
 from flask import Response, Flask, g, redirect, request
 from flask_testing import TestCase
@@ -66,10 +66,10 @@ class AuthenticationTestCase(TestCase):
         auth: DigestAuth = DigestAuth()
         auth.init_app(app)
         self.user: User = User(_USERNAME, _PASSWORD)
-        user_db: t.Dict[str, User] = {_USERNAME: self.user}
+        user_db: Dict[str, User] = {_USERNAME: self.user}
 
         @auth.register_get_password
-        def get_password_hash(username: str) -> t.Optional[str]:
+        def get_password_hash(username: str) -> Optional[str]:
             """Returns the password hash of a user.
 
             :param username: The username.
@@ -79,7 +79,7 @@ class AuthenticationTestCase(TestCase):
                 else None
 
         @auth.register_get_user
-        def get_user(username: str) -> t.Optional[t.Any]:
+        def get_user(username: str) -> Optional[Any]:
             """Returns a user.
 
             :param username: The username.

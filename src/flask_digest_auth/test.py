@@ -18,8 +18,8 @@
 """The test client with HTTP digest authentication enabled.
 
 """
-import typing as t
 from secrets import token_urlsafe
+from typing import Optional, Literal, Tuple, Dict
 
 from flask import g
 from werkzeug.datastructures import Authorization, WWWAuthenticate
@@ -83,7 +83,7 @@ class Client(WerkzeugClient):
     .. _pytest: https://pytest.org
     """
 
-    def open(self, *args, digest_auth: t.Optional[t.Tuple[str, str]] = None,
+    def open(self, *args, digest_auth: Optional[Tuple[str, str]] = None,
              **kwargs) -> TestResponse:
         """Opens a request.
 
@@ -117,14 +117,14 @@ class Client(WerkzeugClient):
         :param password: The password.
         :return: The request authorization.
         """
-        qop: t.Optional[t.Literal["auth", "auth-int"]] = None
+        qop: Optional[Literal["auth", "auth-int"]] = None
         if www_authenticate.qop is not None and "auth" in www_authenticate.qop:
             qop = "auth"
 
-        cnonce: t.Optional[str] = None
+        cnonce: Optional[str] = None
         if qop is not None or www_authenticate.algorithm == "MD5-sess":
             cnonce = token_urlsafe(8)
-        nc: t.Optional[str] = None
+        nc: Optional[str] = None
         count: int = 1
         if qop is not None:
             nc: str = hex(count)[2:].zfill(8)
@@ -137,7 +137,7 @@ class Client(WerkzeugClient):
             algorithm=www_authenticate.algorithm, cnonce=cnonce, nc=nc,
             body=None)
 
-        data: t.Dict[str, str] = {
+        data: Dict[str, str] = {
             "username": username, "realm": www_authenticate.realm,
             "nonce": www_authenticate.nonce, "uri": uri, "response": expected}
         if www_authenticate.algorithm is not None:
