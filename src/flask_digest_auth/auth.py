@@ -225,7 +225,7 @@ class DigestAuth:
         if opaque is not None:
             header += f", opaque=\"{opaque}\""
         if state.stale is not None:
-            header += f", stale=TRUE" if state.stale else f", stale=FALSE"
+            header += ", stale=TRUE" if state.stale else ", stale=FALSE"
         if self.algorithm is not None:
             header += f", algorithm=\"{self.algorithm}\""
         if len(self.__qop) > 0:
