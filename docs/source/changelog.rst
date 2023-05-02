@@ -2,6 +2,14 @@ Change Log
 ==========
 
 
+Version 0.6.1
+-------------
+
+Released 2023/5/3
+
+* Revised the code for the upcoming Werkzeug 2.4.
+
+
 Version 0.6.0
 -------------
 
