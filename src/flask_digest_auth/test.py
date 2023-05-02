@@ -23,6 +23,7 @@ from typing import Optional, Literal, Tuple, Dict
 
 from flask import g
 from werkzeug.datastructures import Authorization, WWWAuthenticate
+from werkzeug.http import parse_set_header
 from werkzeug.test import TestResponse, Client as WerkzeugClient
 
 from flask_digest_auth.algo import calc_response, make_password_hash
@@ -118,7 +119,7 @@ class Client(WerkzeugClient):
         :return: The request authorization.
         """
         qop: Optional[Literal["auth", "auth-int"]] = None
-        if www_authenticate.qop is not None and "auth" in www_authenticate.qop:
+        if "auth" in parse_set_header(www_authenticate.get("qop")):
             qop = "auth"
 
         cnonce: Optional[str] = None
