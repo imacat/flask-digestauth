@@ -140,7 +140,7 @@ class DigestAuth:
                 return view(*args, **kwargs)
             except UnauthorizedException as e:
                 if len(e.args) > 0:
-                    sys.stderr.write(e.args[0] + "\n")
+                    current_app.logger.warning(e.args[0])
                 response: Response = Response()
                 response.status = 401
                 response.headers["WWW-Authenticate"] \
