@@ -18,6 +18,7 @@
 """The test case for the Flask-Login integration.
 
 """
+import logging
 from secrets import token_urlsafe
 from typing import Optional, Dict
 
@@ -75,6 +76,7 @@ class FlaskLoginTestCase(TestCase):
 
         :return: The Flask application.
         """
+        logging.getLogger("test_flask_login").addHandler(logging.NullHandler())
         app: Flask = Flask(__name__)
         app.config.from_mapping({
             "TESTING": True,

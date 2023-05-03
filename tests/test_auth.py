@@ -18,6 +18,7 @@
 """The test case for the HTTP digest authentication.
 
 """
+import logging
 from secrets import token_urlsafe
 from typing import Any, Optional, Dict
 
@@ -55,6 +56,7 @@ class AuthenticationTestCase(TestCase):
 
         :return: The Flask application.
         """
+        logging.getLogger("test_auth").addHandler(logging.NullHandler())
         app: Flask = Flask(__name__)
         app.config.from_mapping({
             "TESTING": True,
