@@ -92,12 +92,12 @@ class FlaskLoginTestCase(TestCase):
         })
         app.test_client_class = Client
 
-        self.has_flask_login: bool = True
+        self.__has_flask_login: bool = True
         """Whether the Flask-Login package is installed."""
         try:
             import flask_login
         except ModuleNotFoundError:
-            self.has_flask_login = False
+            self.__has_flask_login = False
             return app
 
         login_manager: flask_login.LoginManager = flask_login.LoginManager()
@@ -106,9 +106,9 @@ class FlaskLoginTestCase(TestCase):
         auth: DigestAuth = DigestAuth()
         auth.init_app(app)
 
-        self.user: User = User(_USERNAME, _PASSWORD)
+        self.__user: User = User(_USERNAME, _PASSWORD)
         """The user account."""
-        user_db: Dict[str, User] = {_USERNAME: self.user}
+        user_db: Dict[str, User] = {_USERNAME: self.__user}
 
         @auth.register_get_password
         def get_password_hash(username: str) -> Optional[str]:
@@ -173,7 +173,7 @@ class FlaskLoginTestCase(TestCase):
 
         :return: None.
         """
-        if not self.has_flask_login:
+        if not self.__has_flask_login:
             self.skipTest("Skipped without Flask-Login.")
 
         response: Response = self.client.get(self.app.url_for("admin-1"))
@@ -187,14 +187,14 @@ class FlaskLoginTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data.decode("UTF-8"),
                          f"Hello, {_USERNAME}! #2")
-        self.assertEqual(self.user.visits, 1)
+        self.assertEqual(self.__user.visits, 1)
 
     def test_stale_opaque(self) -> None:
         """Tests the stale and opaque value.
 
         :return: None.
         """
-        if not self.has_flask_login:
+        if not self.__has_flask_login:
             self.skipTest("Skipped without Flask-Login.")
 
         admin_uri: str = self.app.url_for("admin-1")
@@ -242,7 +242,7 @@ class FlaskLoginTestCase(TestCase):
 
         :return: None.
         """
-        if not self.has_flask_login:
+        if not self.__has_flask_login:
             self.skipTest("Skipped without Flask-Login.")
 
         admin_uri: str = self.app.url_for("admin-1")
@@ -276,33 +276,33 @@ class FlaskLoginTestCase(TestCase):
 
         response = self.client.get(admin_uri)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.user.visits, 2)
+        self.assertEqual(self.__user.visits, 2)
 
     def test_disabled(self) -> None:
         """Tests the disabled user.
 
         :return: None.
         """
-        if not self.has_flask_login:
+        if not self.__has_flask_login:
             self.skipTest("Skipped without Flask-Login.")
 
         response: Response
 
-        self.user.is_active = False
+        self.__user.is_active = False
         response = self.client.get(self.app.url_for("admin-1"))
         self.assertEqual(response.status_code, 401)
         response = self.client.get(self.app.url_for("admin-1"),
                                    digest_auth=(_USERNAME, _PASSWORD))
         self.assertEqual(response.status_code, 401)
 
-        self.user.is_active = True
+        self.__user.is_active = True
         response = self.client.get(self.app.url_for("admin-1"),
                                    digest_auth=(_USERNAME, _PASSWORD))
         self.assertEqual(response.status_code, 200)
         response = self.client.get(self.app.url_for("admin-1"))
         self.assertEqual(response.status_code, 200)
 
-        self.user.is_active = False
+        self.__user.is_active = False
         response = self.client.get(self.app.url_for("admin-1"))
         self.assertEqual(response.status_code, 401)
         response = self.client.get(self.app.url_for("admin-1"),

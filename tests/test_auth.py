@@ -72,9 +72,9 @@ class AuthenticationTestCase(TestCase):
 
         auth: DigestAuth = DigestAuth()
         auth.init_app(app)
-        self.user: User = User(_USERNAME, _PASSWORD)
+        self.__user: User = User(_USERNAME, _PASSWORD)
         """The user account."""
-        user_db: Dict[str, User] = {_USERNAME: self.user}
+        user_db: Dict[str, User] = {_USERNAME: self.__user}
 
         @auth.register_get_password
         def get_password_hash(username: str) -> Optional[str]:
@@ -150,7 +150,7 @@ class AuthenticationTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data.decode("UTF-8"),
                          f"Hello, {_USERNAME}! #2")
-        self.assertEqual(self.user.visits, 1)
+        self.assertEqual(self.__user.visits, 1)
 
     def test_stale_opaque(self) -> None:
         """Tests the stale and opaque value.
@@ -227,4 +227,4 @@ class AuthenticationTestCase(TestCase):
 
         response = self.client.get(admin_uri)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.user.visits, 2)
+        self.assertEqual(self.__user.visits, 2)
