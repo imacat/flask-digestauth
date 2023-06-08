@@ -29,8 +29,11 @@ from werkzeug.datastructures import WWWAuthenticate, Authorization
 from flask_digest_auth import DigestAuth, make_password_hash, Client
 
 _REALM: str = "testrealm@host.com"
+"""The realm."""
 _USERNAME: str = "Mufasa"
+"""The username."""
 _PASSWORD: str = "Circle Of Life"
+"""The password."""
 
 
 class User:
@@ -43,9 +46,11 @@ class User:
         :param password: The clear-text password.
         """
         self.username: str = username
-        self.password_hash: str = make_password_hash(
-            _REALM, username, password)
+        """The username."""
+        self.password_hash: str = make_password_hash(_REALM, username, password)
+        """The password hash."""
         self.visits: int = 0
+        """The number of visits."""
 
 
 class AuthenticationTestCase(TestCase):
@@ -68,6 +73,7 @@ class AuthenticationTestCase(TestCase):
         auth: DigestAuth = DigestAuth()
         auth.init_app(app)
         self.user: User = User(_USERNAME, _PASSWORD)
+        """The user account."""
         user_db: Dict[str, User] = {_USERNAME: self.user}
 
         @auth.register_get_password
