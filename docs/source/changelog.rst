@@ -2,6 +2,18 @@ Change Log
 ==========
 
 
+Version 0.6.2
+-------------
+
+Released 2023/6/10
+
+* Changed logging from STDERR to the Flask logger.
+* Test case updates:
+  * Added missing documentation.
+  * Changed properties from public to private.
+  * Disabled logging.
+
+
 Version 0.6.1
 -------------
 
