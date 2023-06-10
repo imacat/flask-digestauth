@@ -34,6 +34,8 @@ _USERNAME: str = "Mufasa"
 """The username."""
 _PASSWORD: str = "Circle Of Life"
 """The password."""
+SKIPPED_NO_FLASK_LOGIN: str = "Skipped without Flask-Login."
+"""The message that a test is skipped when Flask-Login is not installed."""
 
 
 class User:
@@ -174,7 +176,7 @@ class FlaskLoginTestCase(TestCase):
         :return: None.
         """
         if not self.__has_flask_login:
-            self.skipTest("Skipped without Flask-Login.")
+            self.skipTest(SKIPPED_NO_FLASK_LOGIN)
 
         response: Response = self.client.get(self.app.url_for("admin-1"))
         self.assertEqual(response.status_code, 401)
@@ -195,7 +197,7 @@ class FlaskLoginTestCase(TestCase):
         :return: None.
         """
         if not self.__has_flask_login:
-            self.skipTest("Skipped without Flask-Login.")
+            self.skipTest(SKIPPED_NO_FLASK_LOGIN)
 
         admin_uri: str = self.app.url_for("admin-1")
         response: Response
@@ -243,7 +245,7 @@ class FlaskLoginTestCase(TestCase):
         :return: None.
         """
         if not self.__has_flask_login:
-            self.skipTest("Skipped without Flask-Login.")
+            self.skipTest(SKIPPED_NO_FLASK_LOGIN)
 
         admin_uri: str = self.app.url_for("admin-1")
         logout_uri: str = self.app.url_for("logout")
@@ -284,7 +286,7 @@ class FlaskLoginTestCase(TestCase):
         :return: None.
         """
         if not self.__has_flask_login:
-            self.skipTest("Skipped without Flask-Login.")
+            self.skipTest(SKIPPED_NO_FLASK_LOGIN)
 
         response: Response
 
