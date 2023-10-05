@@ -19,21 +19,18 @@
 
 """
 import logging
+import unittest
 from secrets import token_urlsafe
 from typing import Optional, Dict
 
-from flask import Response, Flask, g, redirect, request
-from flask_testing import TestCase
-from werkzeug.datastructures import WWWAuthenticate, Authorization
+import httpx
+from flask import Flask, g, redirect, request
+from werkzeug.datastructures import WWWAuthenticate
 
-from flask_digest_auth import DigestAuth, make_password_hash, Client
+from flask_digest_auth import DigestAuth, make_password_hash
+from testlib import REALM, USERNAME, PASSWORD, ADMIN_1_URI, ADMIN_2_URI, \
+    LOGOUT_URI, make_authorization
 
-_REALM: str = "testrealm@host.com"
-"""The realm."""
-_USERNAME: str = "Mufasa"
-"""The username."""
-_PASSWORD: str = "Circle Of Life"
-"""The password."""
 SKIPPED_NO_FLASK_LOGIN: str = "Skipped without Flask-Login."
 """The message that a test is skipped when Flask-Login is not installed."""
 
@@ -49,7 +46,7 @@ class User:
         """
         self.username: str = username
         """The username."""
-        self.password_hash: str = make_password_hash(_REALM, username, password)
+        self.password_hash: str = make_password_hash(REALM, username, password)
         """The password hash."""
         self.visits: int = 0
         """The number of visits."""
@@ -77,22 +74,25 @@ class User:
         return self.is_active
 
 
-class FlaskLoginTestCase(TestCase):
+class FlaskLoginTestCase(unittest.TestCase):
     """The test case with the Flask-Login integration."""
 
-    def create_app(self) -> Flask:
-        """Creates the Flask application.
+    def setUp(self) -> None:
+        """Sets up the test.
+        This is run once per test.
 
-        :return: The Flask application.
+        :return: None.
         """
         logging.getLogger("test_flask_login").addHandler(logging.NullHandler())
-        app: Flask = Flask(__name__)
-        app.config.from_mapping({
+        self.app: Flask = Flask(__name__)
+        self.app.config.from_mapping({
             "TESTING": True,
             "SECRET_KEY": token_urlsafe(32),
-            "DIGEST_AUTH_REALM": _REALM,
+            "DIGEST_AUTH_REALM": REALM,
         })
-        app.test_client_class = Client
+        self.__client: httpx.Client = httpx.Client(
+            app=self.app, base_url="https://testserver")
+        """The testing client."""
 
         self.__has_flask_login: bool = True
         """Whether the Flask-Login package is installed."""
@@ -100,17 +100,17 @@ class FlaskLoginTestCase(TestCase):
             import flask_login
         except ModuleNotFoundError:
             self.__has_flask_login = False
-            return app
+            return
 
         login_manager: flask_login.LoginManager = flask_login.LoginManager()
-        login_manager.init_app(app)
+        login_manager.init_app(self.app)
 
         auth: DigestAuth = DigestAuth()
-        auth.init_app(app)
+        auth.init_app(self.app)
 
-        self.__user: User = User(_USERNAME, _PASSWORD)
+        self.__user: User = User(USERNAME, PASSWORD)
         """The user account."""
-        user_db: Dict[str, User] = {_USERNAME: self.__user}
+        user_db: Dict[str, User] = {USERNAME: self.__user}
 
         @auth.register_get_password
         def get_password_hash(username: str) -> Optional[str]:
@@ -140,7 +140,7 @@ class FlaskLoginTestCase(TestCase):
             """
             return user_db[user_id] if user_id in user_db else None
 
-        @app.get("/admin-1/auth", endpoint="admin-1")
+        @self.app.get(ADMIN_1_URI)
         @flask_login.login_required
         def admin_1() -> str:
             """The first administration section.
@@ -149,7 +149,7 @@ class FlaskLoginTestCase(TestCase):
             """
             return f"Hello, {flask_login.current_user.get_id()}! #1"
 
-        @app.get("/admin-2/auth", endpoint="admin-2")
+        @self.app.get(ADMIN_2_URI)
         @flask_login.login_required
         def admin_2() -> str:
             """The second administration section.
@@ -158,7 +158,7 @@ class FlaskLoginTestCase(TestCase):
             """
             return f"Hello, {flask_login.current_user.get_id()}! #2"
 
-        @app.post("/logout", endpoint="logout")
+        @self.app.post(LOGOUT_URI)
         @flask_login.login_required
         def logout() -> redirect:
             """Logs out the user.
@@ -168,8 +168,6 @@ class FlaskLoginTestCase(TestCase):
             auth.logout()
             return redirect(request.form.get("next"))
 
-        return app
-
     def test_auth(self) -> None:
         """Tests the authentication.
 
@@ -178,17 +176,17 @@ class FlaskLoginTestCase(TestCase):
         if not self.__has_flask_login:
             self.skipTest(SKIPPED_NO_FLASK_LOGIN)
 
-        response: Response = self.client.get(self.app.url_for("admin-1"))
+        response: httpx.Response
+
+        response = self.__client.get(ADMIN_1_URI)
         self.assertEqual(response.status_code, 401)
-        response = self.client.get(
-            self.app.url_for("admin-1"), digest_auth=(_USERNAME, _PASSWORD))
+        response = self.__client.get(ADMIN_1_URI,
+                                     auth=httpx.DigestAuth(USERNAME, PASSWORD))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data.decode("UTF-8"),
-                         f"Hello, {_USERNAME}! #1")
-        response: Response = self.client.get(self.app.url_for("admin-2"))
+        self.assertEqual(response.text, f"Hello, {USERNAME}! #1")
+        response = self.__client.get(ADMIN_2_URI)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data.decode("UTF-8"),
-                         f"Hello, {_USERNAME}! #2")
+        self.assertEqual(response.text, f"Hello, {USERNAME}! #2")
         self.assertEqual(self.__user.visits, 1)
 
     def test_stale_opaque(self) -> None:
@@ -199,44 +197,52 @@ class FlaskLoginTestCase(TestCase):
         if not self.__has_flask_login:
             self.skipTest(SKIPPED_NO_FLASK_LOGIN)
 
-        admin_uri: str = self.app.url_for("admin-1")
-        response: Response
+        response: httpx.Response
         www_authenticate: WWWAuthenticate
-        auth_data: Authorization
+        auth_header: str
 
-        response = super(Client, self.client).get(admin_uri)
+        response = self.__client.get(ADMIN_1_URI)
         self.assertEqual(response.status_code, 401)
-        www_authenticate = response.www_authenticate
+        www_authenticate = WWWAuthenticate.from_header(
+            response.headers["WWW-Authenticate"])
         self.assertEqual(www_authenticate.type, "digest")
         self.assertIsNone(www_authenticate.get("stale"))
         opaque: str = www_authenticate.opaque
 
-        if hasattr(g, "_login_user"):
-            delattr(g, "_login_user")
+        with self.app.app_context():
+            if hasattr(g, "_login_user"):
+                delattr(g, "_login_user")
         www_authenticate.nonce = "bad"
-        auth_data = Client.make_authorization(
-            www_authenticate, admin_uri, _USERNAME, _PASSWORD)
-        response = super(Client, self.client).get(admin_uri, auth=auth_data)
+        auth_header = make_authorization(
+            www_authenticate, ADMIN_1_URI, USERNAME, PASSWORD)
+        response = self.__client.get(ADMIN_1_URI,
+                                     headers={"Authorization": auth_header})
         self.assertEqual(response.status_code, 401)
-        www_authenticate = response.www_authenticate
+        www_authenticate = WWWAuthenticate.from_header(
+            response.headers["WWW-Authenticate"])
         self.assertEqual(www_authenticate.get("stale"), "TRUE")
         self.assertEqual(www_authenticate.opaque, opaque)
 
-        if hasattr(g, "_login_user"):
-            delattr(g, "_login_user")
-        auth_data = Client.make_authorization(
-            www_authenticate, admin_uri, _USERNAME, _PASSWORD + "2")
-        response = super(Client, self.client).get(admin_uri, auth=auth_data)
+        with self.app.app_context():
+            if hasattr(g, "_login_user"):
+                delattr(g, "_login_user")
+        auth_header = make_authorization(
+            www_authenticate, ADMIN_1_URI, USERNAME, PASSWORD + "2")
+        response = self.__client.get(ADMIN_1_URI,
+                                     headers={"Authorization": auth_header})
         self.assertEqual(response.status_code, 401)
-        www_authenticate = response.www_authenticate
+        www_authenticate = WWWAuthenticate.from_header(
+            response.headers["WWW-Authenticate"])
         self.assertEqual(www_authenticate.get("stale"), "FALSE")
         self.assertEqual(www_authenticate.opaque, opaque)
 
-        if hasattr(g, "_login_user"):
-            delattr(g, "_login_user")
-        auth_data = Client.make_authorization(
-            www_authenticate, admin_uri, _USERNAME, _PASSWORD)
-        response = super(Client, self.client).get(admin_uri, auth=auth_data)
+        with self.app.app_context():
+            if hasattr(g, "_login_user"):
+                delattr(g, "_login_user")
+        auth_header = make_authorization(
+            www_authenticate, ADMIN_1_URI, USERNAME, PASSWORD)
+        response = self.__client.get(ADMIN_1_URI,
+                                     headers={"Authorization": auth_header})
         self.assertEqual(response.status_code, 200)
 
     def test_logout(self) -> None:
@@ -247,36 +253,34 @@ class FlaskLoginTestCase(TestCase):
         if not self.__has_flask_login:
             self.skipTest(SKIPPED_NO_FLASK_LOGIN)
 
-        admin_uri: str = self.app.url_for("admin-1")
-        logout_uri: str = self.app.url_for("logout")
-        response: Response
+        response: httpx.Response
 
-        response = self.client.get(admin_uri)
+        response = self.__client.get(ADMIN_1_URI)
         self.assertEqual(response.status_code, 401)
 
-        response = self.client.get(admin_uri,
-                                   digest_auth=(_USERNAME, _PASSWORD))
+        response = self.__client.get(ADMIN_1_URI,
+                                     auth=httpx.DigestAuth(USERNAME, PASSWORD))
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.get(admin_uri)
+        response = self.__client.get(ADMIN_1_URI)
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.post(logout_uri, data={"next": admin_uri})
+        response = self.__client.post(LOGOUT_URI, data={"next": ADMIN_1_URI})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.location, admin_uri)
+        self.assertEqual(response.headers["Location"], ADMIN_1_URI)
 
-        response = self.client.get(admin_uri)
+        response = self.__client.get(ADMIN_1_URI)
         self.assertEqual(response.status_code, 401)
 
-        response = self.client.get(admin_uri,
-                                   digest_auth=(_USERNAME, _PASSWORD))
+        response = self.__client.get(ADMIN_1_URI,
+                                     auth=httpx.DigestAuth(USERNAME, PASSWORD))
         self.assertEqual(response.status_code, 401)
 
-        response = self.client.get(admin_uri,
-                                   digest_auth=(_USERNAME, _PASSWORD))
+        response = self.__client.get(ADMIN_1_URI,
+                                     auth=httpx.DigestAuth(USERNAME, PASSWORD))
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.get(admin_uri)
+        response = self.__client.get(ADMIN_1_URI)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.__user.visits, 2)
 
@@ -288,25 +292,25 @@ class FlaskLoginTestCase(TestCase):
         if not self.__has_flask_login:
             self.skipTest(SKIPPED_NO_FLASK_LOGIN)
 
-        response: Response
+        response: httpx.Response
 
         self.__user.is_active = False
-        response = self.client.get(self.app.url_for("admin-1"))
+        response = self.__client.get(ADMIN_1_URI)
         self.assertEqual(response.status_code, 401)
-        response = self.client.get(self.app.url_for("admin-1"),
-                                   digest_auth=(_USERNAME, _PASSWORD))
+        response = self.__client.get(ADMIN_1_URI,
+                                     auth=httpx.DigestAuth(USERNAME, PASSWORD))
         self.assertEqual(response.status_code, 401)
 
         self.__user.is_active = True
-        response = self.client.get(self.app.url_for("admin-1"),
-                                   digest_auth=(_USERNAME, _PASSWORD))
+        response = self.__client.get(ADMIN_1_URI,
+                                     auth=httpx.DigestAuth(USERNAME, PASSWORD))
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(self.app.url_for("admin-1"))
+        response = self.__client.get(ADMIN_1_URI)
         self.assertEqual(response.status_code, 200)
 
         self.__user.is_active = False
-        response = self.client.get(self.app.url_for("admin-1"))
+        response = self.__client.get(ADMIN_1_URI)
         self.assertEqual(response.status_code, 401)
-        response = self.client.get(self.app.url_for("admin-1"),
-                                   digest_auth=(_USERNAME, _PASSWORD))
+        response = self.__client.get(ADMIN_1_URI,
+                                     auth=httpx.DigestAuth(USERNAME, PASSWORD))
         self.assertEqual(response.status_code, 401)

@@ -19,21 +19,17 @@
 
 """
 import logging
+import unittest
 from secrets import token_urlsafe
 from typing import Any, Optional, Dict
 
-from flask import Response, Flask, g, redirect, request
-from flask_testing import TestCase
-from werkzeug.datastructures import WWWAuthenticate, Authorization
+import httpx
+from flask import Flask, g, redirect, request
+from werkzeug.datastructures import WWWAuthenticate
 
-from flask_digest_auth import DigestAuth, make_password_hash, Client
-
-_REALM: str = "testrealm@host.com"
-"""The realm."""
-_USERNAME: str = "Mufasa"
-"""The username."""
-_PASSWORD: str = "Circle Of Life"
-"""The password."""
+from flask_digest_auth import DigestAuth, make_password_hash
+from testlib import REALM, USERNAME, PASSWORD, ADMIN_1_URI, ADMIN_2_URI, \
+    LOGOUT_URI, make_authorization
 
 
 class User:
@@ -47,34 +43,37 @@ class User:
         """
         self.username: str = username
         """The username."""
-        self.password_hash: str = make_password_hash(_REALM, username, password)
+        self.password_hash: str = make_password_hash(REALM, username, password)
         """The password hash."""
         self.visits: int = 0
         """The number of visits."""
 
 
-class AuthenticationTestCase(TestCase):
+class AuthenticationTestCase(unittest.TestCase):
     """The test case for the HTTP digest authentication."""
 
-    def create_app(self):
-        """Creates the Flask application.
+    def setUp(self) -> None:
+        """Sets up the test.
+        This is run once per test.
 
-        :return: The Flask application.
+        :return: None.
         """
         logging.getLogger("test_auth").addHandler(logging.NullHandler())
         app: Flask = Flask(__name__)
         app.config.from_mapping({
             "TESTING": True,
             "SECRET_KEY": token_urlsafe(32),
-            "DIGEST_AUTH_REALM": _REALM,
+            "DIGEST_AUTH_REALM": REALM,
         })
-        app.test_client_class = Client
+        self.__client: httpx.Client = httpx.Client(
+            app=app, base_url="https://testserver")
+        """The testing client."""
 
         auth: DigestAuth = DigestAuth()
         auth.init_app(app)
-        self.__user: User = User(_USERNAME, _PASSWORD)
+        self.__user: User = User(USERNAME, PASSWORD)
         """The user account."""
-        user_db: Dict[str, User] = {_USERNAME: self.__user}
+        user_db: Dict[str, User] = {USERNAME: self.__user}
 
         @auth.register_get_password
         def get_password_hash(username: str) -> Optional[str]:
@@ -104,7 +103,7 @@ class AuthenticationTestCase(TestCase):
             """
             user.visits = user.visits + 1
 
-        @app.get("/admin-1/auth", endpoint="admin-1")
+        @app.get(ADMIN_1_URI, endpoint="admin-1")
         @auth.login_required
         def admin_1() -> str:
             """The first administration section.
@@ -113,7 +112,7 @@ class AuthenticationTestCase(TestCase):
             """
             return f"Hello, {g.user.username}! #1"
 
-        @app.get("/admin-2/auth", endpoint="admin-2")
+        @app.get(ADMIN_2_URI, endpoint="admin-2")
         @auth.login_required
         def admin_2() -> str:
             """The second administration section.
@@ -122,7 +121,7 @@ class AuthenticationTestCase(TestCase):
             """
             return f"Hello, {g.user.username}! #2"
 
-        @app.post("/logout", endpoint="logout")
+        @app.post(LOGOUT_URI, endpoint="logout")
         @auth.login_required
         def logout() -> redirect:
             """Logs out the user.
@@ -132,24 +131,21 @@ class AuthenticationTestCase(TestCase):
             auth.logout()
             return redirect(request.form.get("next"))
 
-        return app
-
     def test_auth(self) -> None:
         """Tests the authentication.
 
         :return: None.
         """
-        response: Response = self.client.get(self.app.url_for("admin-1"))
+        response: httpx.Response
+        response = self.__client.get(ADMIN_1_URI)
         self.assertEqual(response.status_code, 401)
-        response = self.client.get(
-            self.app.url_for("admin-1"), digest_auth=(_USERNAME, _PASSWORD))
+        response = self.__client.get(ADMIN_1_URI,
+                                     auth=httpx.DigestAuth(USERNAME, PASSWORD))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data.decode("UTF-8"),
-                         f"Hello, {_USERNAME}! #1")
-        response: Response = self.client.get(self.app.url_for("admin-2"))
+        self.assertEqual(response.text, f"Hello, {USERNAME}! #1")
+        response = self.__client.get(ADMIN_2_URI)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data.decode("UTF-8"),
-                         f"Hello, {_USERNAME}! #2")
+        self.assertEqual(response.text, f"Hello, {USERNAME}! #2")
         self.assertEqual(self.__user.visits, 1)
 
     def test_stale_opaque(self) -> None:
@@ -157,38 +153,43 @@ class AuthenticationTestCase(TestCase):
 
         :return: None.
         """
-        admin_uri: str = self.app.url_for("admin-1")
-        response: Response
+        response: httpx.Response
         www_authenticate: WWWAuthenticate
-        auth_data: Authorization
+        auth_header: str
 
-        response = super(Client, self.client).get(admin_uri)
+        response = self.__client.get(ADMIN_1_URI)
         self.assertEqual(response.status_code, 401)
-        www_authenticate = response.www_authenticate
+        www_authenticate = WWWAuthenticate.from_header(
+            response.headers["WWW-Authenticate"])
         self.assertEqual(www_authenticate.type, "digest")
         self.assertIsNone(www_authenticate.get("stale"))
         opaque: str = www_authenticate.opaque
 
         www_authenticate.nonce = "bad"
-        auth_data = Client.make_authorization(
-            www_authenticate, admin_uri, _USERNAME, _PASSWORD)
-        response = super(Client, self.client).get(admin_uri, auth=auth_data)
+        auth_header = make_authorization(
+            www_authenticate, ADMIN_1_URI, USERNAME, PASSWORD)
+        response = self.__client.get(ADMIN_1_URI,
+                                     headers={"Authorization": auth_header})
         self.assertEqual(response.status_code, 401)
-        www_authenticate = response.www_authenticate
+        www_authenticate = WWWAuthenticate.from_header(
+            response.headers["WWW-Authenticate"])
         self.assertEqual(www_authenticate.get("stale"), "TRUE")
         self.assertEqual(www_authenticate.opaque, opaque)
 
-        auth_data = Client.make_authorization(
-            www_authenticate, admin_uri, _USERNAME, _PASSWORD + "2")
-        response = super(Client, self.client).get(admin_uri, auth=auth_data)
+        auth_header = make_authorization(
+            www_authenticate, ADMIN_1_URI, USERNAME, PASSWORD + "2")
+        response = self.__client.get(ADMIN_1_URI,
+                                     headers={"Authorization": auth_header})
         self.assertEqual(response.status_code, 401)
-        www_authenticate = response.www_authenticate
+        www_authenticate = WWWAuthenticate.from_header(
+            response.headers["WWW-Authenticate"])
         self.assertEqual(www_authenticate.get("stale"), "FALSE")
         self.assertEqual(www_authenticate.opaque, opaque)
 
-        auth_data = Client.make_authorization(
-            www_authenticate, admin_uri, _USERNAME, _PASSWORD)
-        response = super(Client, self.client).get(admin_uri, auth=auth_data)
+        auth_header = make_authorization(
+            www_authenticate, ADMIN_1_URI, USERNAME, PASSWORD)
+        response = self.__client.get(ADMIN_1_URI,
+                                     headers={"Authorization": auth_header})
         self.assertEqual(response.status_code, 200)
 
     def test_logout(self) -> None:
@@ -196,35 +197,34 @@ class AuthenticationTestCase(TestCase):
 
         :return: None.
         """
-        admin_uri: str = self.app.url_for("admin-1")
-        logout_uri: str = self.app.url_for("logout")
-        response: Response
+        logout_uri: str = LOGOUT_URI
+        response: httpx.Response
 
-        response = self.client.get(admin_uri)
+        response = self.__client.get(ADMIN_1_URI)
         self.assertEqual(response.status_code, 401)
 
-        response = self.client.get(admin_uri,
-                                   digest_auth=(_USERNAME, _PASSWORD))
+        response = self.__client.get(ADMIN_1_URI,
+                                     auth=httpx.DigestAuth(USERNAME, PASSWORD))
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.get(admin_uri)
+        response = self.__client.get(ADMIN_1_URI)
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.post(logout_uri, data={"next": admin_uri})
+        response = self.__client.post(logout_uri, data={"next": ADMIN_1_URI})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.location, admin_uri)
+        self.assertEqual(response.headers["Location"], ADMIN_1_URI)
 
-        response = self.client.get(admin_uri)
+        response = self.__client.get(ADMIN_1_URI)
         self.assertEqual(response.status_code, 401)
 
-        response = self.client.get(admin_uri,
-                                   digest_auth=(_USERNAME, _PASSWORD))
+        response = self.__client.get(ADMIN_1_URI,
+                                     auth=httpx.DigestAuth(USERNAME, PASSWORD))
         self.assertEqual(response.status_code, 401)
 
-        response = self.client.get(admin_uri,
-                                   digest_auth=(_USERNAME, _PASSWORD))
+        response = self.__client.get(ADMIN_1_URI,
+                                     auth=httpx.DigestAuth(USERNAME, PASSWORD))
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.get(admin_uri)
+        response = self.__client.get(ADMIN_1_URI)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.__user.visits, 2)

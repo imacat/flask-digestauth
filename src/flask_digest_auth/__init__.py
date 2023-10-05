@@ -1,7 +1,7 @@
 # The Flask HTTP Digest Authentication Project.
 # Author: imacat@mail.imacat.idv.tw (imacat), 2022/11/6
 
-#  Copyright (c) 2022 imacat.
+#  Copyright (c) 2022-2023 imacat.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 """
 from flask_digest_auth.algo import make_password_hash, calc_response
 from flask_digest_auth.auth import DigestAuth
-from flask_digest_auth.test import Client
 
 VERSION: str = "0.6.2"
 """The package version."""

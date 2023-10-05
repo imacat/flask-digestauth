@@ -40,7 +40,7 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "unittest",
-    "flask-testing",
+    "httpx",
 ]
 
 [project.urls]
