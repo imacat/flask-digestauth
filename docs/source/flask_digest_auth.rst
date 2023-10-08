@@ -20,14 +20,6 @@ flask\_digest\_auth.auth module
    :undoc-members:
    :show-inheritance:
 
-flask\_digest\_auth.test module
--------------------------------
-
-.. automodule:: flask_digest_auth.test
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 
