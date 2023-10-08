@@ -2,6 +2,17 @@ Change Log
 ==========
 
 
+Version 0.7.0
+-------------
+
+Released 2023/10/8
+
+* Removed the test client.  You should use httpx instead of Flask-Testing
+  when writing automatic tests.  Flask-Testing is not maintained for more
+  than 3 years, and is not compatible with Flask 3 now.
+* Revised to skip the tests when Flask-Login is not compatible with Werkzeug.
+
+
 Version 0.6.2
 -------------
 
