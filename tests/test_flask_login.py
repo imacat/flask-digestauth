@@ -101,6 +101,9 @@ class FlaskLoginTestCase(unittest.TestCase):
         except ModuleNotFoundError:
             self.__has_flask_login = False
             return
+        except ImportError:
+            self.__has_flask_login = False
+            return
 
         login_manager: flask_login.LoginManager = flask_login.LoginManager()
         login_manager.init_app(self.app)
