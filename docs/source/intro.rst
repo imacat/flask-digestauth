@@ -137,17 +137,6 @@ new username and password.
 See :meth:`flask_digest_auth.auth.DigestAuth.logout`.
 
 
-Test Client
------------
-
-Flask-DigestAuth comes with a test client that supports HTTP digest
-authentication.
-
-See :class:`flask_digest_auth.test.Client`.
-
-Also see :ref:`example-unittest` and :ref:`example-pytest`.
-
-
 .. _HTTP Digest Authentication: https://en.wikipedia.org/wiki/Digest_access_authentication
 .. _RFC 2617: https://www.rfc-editor.org/rfc/rfc2617
 .. _Flask: https://flask.palletsprojects.com
