@@ -21,5 +21,5 @@
 from flask_digest_auth.algo import make_password_hash, calc_response
 from flask_digest_auth.auth import DigestAuth
 
-VERSION: str = "0.7.0"
+VERSION: str = "0.7.1"
 """The package version."""

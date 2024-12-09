@@ -2,6 +2,14 @@ Change Log
 ==========
 
 
+Version 0.7.1
+-------------
+
+Released 2024/12/9
+
+Fix test cases for compatibility with httpx 0.28.0.
+
+
 Version 0.7.0
 -------------
 
