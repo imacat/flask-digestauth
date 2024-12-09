@@ -66,7 +66,8 @@ class AuthenticationTestCase(unittest.TestCase):
             "DIGEST_AUTH_REALM": REALM,
         })
         self.__client: httpx.Client = httpx.Client(
-            app=app, base_url="https://testserver")
+            transport=httpx.WSGITransport(app=app),
+            base_url="https://testserver")
         """The testing client."""
 
         auth: DigestAuth = DigestAuth()

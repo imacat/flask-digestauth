@@ -91,7 +91,8 @@ class FlaskLoginTestCase(unittest.TestCase):
             "DIGEST_AUTH_REALM": REALM,
         })
         self.__client: httpx.Client = httpx.Client(
-            app=self.app, base_url="https://testserver")
+            transport=httpx.WSGITransport(app=self.app),
+            base_url="https://testserver")
         """The testing client."""
 
         self.__has_flask_login: bool = True

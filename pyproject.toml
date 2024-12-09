@@ -39,7 +39,7 @@ dependencies = [
 
 [project.optional-dependencies]
 devel = [
-    "httpx",
+    "httpx >= 0.20.0",
 ]
 
 [project.urls]
